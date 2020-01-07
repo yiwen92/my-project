@@ -1,0 +1,2 @@
+model_checkpoint_path: "D:\\Python Project\\classifyEntityProject\\sentence_similar/models/model_20200107-183738\\intent_classifier_tensorflow_embedding.ckpt"
+all_model_checkpoint_paths: "D:\\Python Project\\classifyEntityProject\\sentence_similar/models/model_20200107-183738\\intent_classifier_tensorflow_embedding.ckpt"
