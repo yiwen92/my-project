@@ -1,0 +1,359 @@
+2019-01-22 16:53:53 INFO Start Train Model ...
+2019-01-22 16:53:53 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-22 16:53:53 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-22 16:53:53 INFO intent_labels : ["面试", "法律", "求职", "互联网"]
+2019-01-22 16:53:53 INFO Dictionary size: 180
+2019-01-22 16:53:53 INFO k-negative sampling number is 3
+2019-01-22 16:53:56 INFO Accuracy is updated every 10 epochs
+2019-01-22 16:53:57 INFO Finished training embedding classifier, loss=0.227, train accuracy=1.000
+2019-01-22 16:53:57 INFO Model saved to D:\Python Project\classifyEntityProject\sentence_similar/models/model_20190122-165357
+2019-01-22 16:53:57 INFO Train Model Finished
+
+2019-01-22 16:53:57 INFO Restoring parameters from ./models/model_20190122-165357\intent_classifier_tensorflow_embedding.ckpt
+2019-01-22 16:54:28 INFO Start Train Model ...
+2019-01-22 16:54:28 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-22 16:54:28 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-22 16:54:28 INFO intent_labels : ["求职", "互联网", "面试", "法律"]
+2019-01-22 16:54:28 INFO Dictionary size: 180
+2019-01-22 16:54:28 INFO k-negative sampling number is 3
+2019-01-22 16:54:31 INFO Accuracy is updated every 10 epochs
+2019-01-22 16:54:32 INFO Finished training embedding classifier, loss=0.225, train accuracy=1.000
+2019-01-22 16:54:32 INFO Model saved to D:\Python Project\classifyEntityProject\sentence_similar/models/model_20190122-165432
+2019-01-22 16:54:32 INFO Train Model Finished
+
+2019-01-22 16:54:33 INFO Restoring parameters from ./models/model_20190122-165432\intent_classifier_tensorflow_embedding.ckpt
+2019-01-23 09:30:45 INFO Start Train Model ...
+2019-01-23 09:30:45 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-23 09:30:45 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-23 09:30:45 INFO intent_labels : ["求职", "法律", "面试", "互联网"]
+2019-01-23 09:30:45 INFO Dictionary size: 180
+2019-01-23 09:30:45 INFO k-negative sampling number is 3
+2019-01-23 09:30:59 INFO Accuracy is updated every 10 epochs
+2019-01-23 09:31:00 INFO Finished training embedding classifier, loss=0.221, train accuracy=1.000
+2019-01-23 09:31:00 INFO Model saved to D:\Python Project\classifyEntityProject\sentence_similar/models/model_20190123-093100
+2019-01-23 09:31:01 INFO Train Model Finished
+
+2019-01-23 09:31:01 INFO Restoring parameters from ./models/model_20190123-093100\intent_classifier_tensorflow_embedding.ckpt
+2019-01-23 09:38:16 INFO Start Train Model ...
+2019-01-23 09:38:16 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-23 09:38:16 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-23 09:38:16 INFO intent_labels : ["求职", "面试", "互联网", "法律"]
+2019-01-23 09:38:16 INFO Dictionary size: 180
+2019-01-23 09:39:06 INFO Start Train Model ...
+2019-01-23 09:39:06 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-23 09:39:06 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-23 09:39:06 INFO intent_labels : ["互联网", "法律", "求职", "面试"]
+2019-01-23 09:39:06 INFO Dictionary size: 180
+2019-01-23 09:40:30 INFO Start Train Model ...
+2019-01-23 09:40:30 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-23 09:40:30 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-23 09:40:30 INFO intent_labels : ["互联网", "面试", "求职", "法律"]
+2019-01-23 09:40:30 INFO Dictionary size: 180
+2019-01-23 09:43:19 INFO Start Train Model ...
+2019-01-23 09:43:19 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-23 09:43:19 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-23 09:43:19 INFO intent_labels : ["互联网", "法律", "求职", "面试"]
+2019-01-23 09:43:19 INFO Dictionary size: 180
+2019-01-23 09:43:19 INFO Embedding intent classifier parameter {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-23 10:00:14 INFO Start Train Model ...
+2019-01-23 10:00:14 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-23 10:00:14 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-23 10:00:14 INFO intent_labels : ["法律", "互联网", "面试", "求职"]
+2019-01-23 10:00:14 INFO Dictionary size: 180
+2019-01-23 10:00:14 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-23 10:00:14 INFO k-negative sampling number is 3
+2019-01-23 10:00:36 INFO Accuracy is updated every 10 epochs
+2019-01-23 15:24:05 INFO Start Train Model ...
+2019-01-23 15:24:05 INFO Training data format of ./data/sen_class_corp5.md is md
+2019-01-23 15:24:05 INFO Training data stats: 	- intent examples: 31553 (31 distinct intents)
+2019-01-23 15:24:05 INFO intent_labels : ["程序员", "职场", "面试", "创业", "互联网", "设计", "职业", "汽车", "保险", "前端开发", "人力资源（HR）", "教育", "电子商务", "市场营销", "游戏", "土木工程", "产品经理", "销售", "法律", "房地产", "财务", "职业发展", "学习", "大学", "建筑", "银行", "生活", "求职", "应届毕业生", "电影", "职业规划"]
+2019-01-23 15:24:05 INFO Dictionary size: 3245
+2019-01-23 15:24:05 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-23 15:24:06 INFO k-negative sampling number is 20
+2019-01-23 15:24:30 INFO Accuracy is updated every 10 epochs
+2019-01-26 11:01:19 INFO Start Train Model ...
+2019-01-26 11:01:19 INFO Training data format of ./data/sen_class_corp5.md is md
+2019-01-26 11:01:20 INFO Training data stats: 	- intent examples: 31553 (31 distinct intents)
+2019-01-26 11:01:20 INFO intent_labels : ["银行", "程序员", "大学", "市场营销", "建筑", "职业", "职业发展", "电子商务", "汽车", "法律", "职业规划", "财务", "互联网", "产品经理", "游戏", "电影", "土木工程", "人力资源（HR）", "生活", "创业", "设计", "保险", "求职", "前端开发", "教育", "应届毕业生", "学习", "销售", "职场", "房地产", "面试"]
+2019-01-26 11:03:49 INFO Start Train Model ...
+2019-01-26 11:03:49 INFO Training data format of ./data/sen_class_corp5.md is md
+2019-01-26 11:03:50 INFO Training data stats: 	- intent examples: 31553 (31 distinct intents)
+2019-01-26 11:03:50 INFO intent_labels : ["教育", "面试", "大学", "前端开发", "游戏", "职业发展", "产品经理", "汽车", "程序员", "保险", "电影", "求职", "生活", "互联网", "职场", "销售", "财务", "房地产", "市场营销", "电子商务", "银行", "学习", "创业", "土木工程", "职业", "设计", "建筑", "法律", "应届毕业生", "职业规划", "人力资源（HR）"]
+2019-01-26 11:04:58 INFO Start Train Model ...
+2019-01-26 11:04:58 INFO Training data format of ./data/sen_class_corp5.md is md
+2019-01-26 11:04:58 INFO Training data stats: 	- intent examples: 31553 (31 distinct intents)
+2019-01-26 11:04:58 INFO intent_labels : ["大学", "生活", "教育", "职业规划", "建筑", "求职", "职业发展", "应届毕业生", "互联网", "学习", "法律", "销售", "前端开发", "职业", "房地产", "汽车", "产品经理", "市场营销", "财务", "职场", "保险", "电子商务", "电影", "程序员", "银行", "人力资源（HR）", "游戏", "土木工程", "创业", "面试", "设计"]
+2019-01-26 11:54:37 INFO Start Train Model ...
+2019-01-26 11:54:37 INFO Training data format of ./data/sen_class_corp5.md is md
+2019-01-26 11:54:38 INFO Training data stats: 	- intent examples: 31553 (31 distinct intents)
+2019-01-26 11:54:38 INFO intent_labels : ["职业规划", "房地产", "法律", "教育", "应届毕业生", "建筑", "电子商务", "前端开发", "程序员", "电影", "创业", "银行", "学习", "保险", "土木工程", "求职", "生活", "游戏", "互联网", "产品经理", "职业", "大学", "销售", "市场营销", "职业发展", "财务", "人力资源（HR）", "汽车", "设计", "面试", "职场"]
+2019-01-26 11:55:52 INFO Start Train Model ...
+2019-01-26 11:55:52 INFO Training data format of ./data/sen_class_corp5.md is md
+2019-01-26 11:55:53 INFO Training data stats: 	- intent examples: 31553 (31 distinct intents)
+2019-01-26 11:55:53 INFO intent_labels : ["职业发展", "销售", "建筑", "教育", "前端开发", "设计", "互联网", "法律", "应届毕业生", "大学", "汽车", "面试", "银行", "职业", "求职", "土木工程", "人力资源（HR）", "学习", "职场", "创业", "市场营销", "生活", "程序员", "电影", "游戏", "电子商务", "职业规划", "产品经理", "房地产", "财务", "保险"]
+2019-01-26 11:56:23 INFO Start Train Model ...
+2019-01-26 11:56:23 INFO Training data format of ./data/sen_class_corp5.md is md
+2019-01-26 11:56:23 INFO Training data stats: 	- intent examples: 31553 (31 distinct intents)
+2019-01-26 11:56:23 INFO intent_labels : ["电影", "创业", "互联网", "设计", "生活", "学习", "前端开发", "应届毕业生", "产品经理", "销售", "程序员", "建筑", "房地产", "人力资源（HR）", "职业", "法律", "土木工程", "大学", "面试", "汽车", "游戏", "银行", "职业发展", "职场", "求职", "职业规划", "教育", "市场营销", "电子商务", "财务", "保险"]
+2019-01-26 11:56:24 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 11:56:24 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 11:56:25 DEBUG Loading model cost 0.743 seconds.
+2019-01-26 11:56:25 DEBUG Prefix dict has been built succesfully.
+2019-01-26 11:58:10 INFO Start Train Model ...
+2019-01-26 11:58:10 INFO Training data format of ./data/sen_class_corp5.md is md
+2019-01-26 11:58:11 INFO Training data stats: 	- intent examples: 31553 (31 distinct intents)
+2019-01-26 11:58:11 INFO intent_labels : ["建筑", "求职", "电影", "房地产", "互联网", "职业", "生活", "设计", "汽车", "教育", "银行", "法律", "游戏", "电子商务", "学习", "创业", "市场营销", "大学", "土木工程", "职场", "人力资源（HR）", "销售", "程序员", "面试", "产品经理", "保险", "职业规划", "前端开发", "职业发展", "应届毕业生", "财务"]
+2019-01-26 11:58:12 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 11:58:12 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 11:58:12 DEBUG Loading model cost 0.747 seconds.
+2019-01-26 11:58:12 DEBUG Prefix dict has been built succesfully.
+2019-01-26 11:59:56 INFO Start Train Model ...
+2019-01-26 11:59:56 INFO Training data format of ./data/sen_class_corp5.md is md
+2019-01-26 11:59:56 INFO Training data stats: 	- intent examples: 31553 (31 distinct intents)
+2019-01-26 11:59:56 INFO intent_labels : ["程序员", "银行", "土木工程", "法律", "产品经理", "财务", "创业", "前端开发", "面试", "游戏", "生活", "电子商务", "电影", "汽车", "学习", "房地产", "职业规划", "大学", "应届毕业生", "销售", "市场营销", "互联网", "职场", "求职", "职业发展", "职业", "建筑", "教育", "人力资源（HR）", "设计", "保险"]
+2019-01-26 11:59:57 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 11:59:57 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 11:59:57 DEBUG Loading model cost 0.727 seconds.
+2019-01-26 11:59:57 DEBUG Prefix dict has been built succesfully.
+2019-01-26 14:16:21 INFO Start Train Model ...
+2019-01-26 14:16:31 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-26 14:16:31 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-26 14:16:31 INFO intent_labels : ["互联网", "法律", "求职", "面试"]
+2019-01-26 14:16:52 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 14:16:52 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 14:16:52 DEBUG Loading model cost 0.660 seconds.
+2019-01-26 14:16:52 DEBUG Prefix dict has been built succesfully.
+2019-01-26 14:18:03 INFO Dictionary size: 184
+2019-01-26 14:21:02 INFO Start Train Model ...
+2019-01-26 14:21:02 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-26 14:21:02 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-26 14:21:02 INFO intent_labels : ["法律", "互联网", "求职", "面试"]
+2019-01-26 14:21:03 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 14:21:03 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 14:21:03 DEBUG Loading model cost 0.711 seconds.
+2019-01-26 14:21:03 DEBUG Prefix dict has been built succesfully.
+2019-01-26 14:21:03 INFO Dictionary size: 184
+2019-01-26 14:21:11 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-26 14:26:09 INFO Start Train Model ...
+2019-01-26 14:26:09 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-26 14:26:09 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-26 14:26:09 INFO intent_labels : ["法律", "互联网", "面试", "求职"]
+2019-01-26 14:26:09 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 14:26:09 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 14:26:10 DEBUG Loading model cost 0.662 seconds.
+2019-01-26 14:26:10 DEBUG Prefix dict has been built succesfully.
+2019-01-26 14:40:08 INFO Start Train Model ...
+2019-01-26 14:40:08 INFO Training data format of ./data/sen_class_corp66.md is md
+2019-01-26 14:40:09 INFO Training data stats: 	- intent examples: 85662 (53 distinct intents)
+2019-01-26 14:40:09 INFO intent_labels : ["广告算法", "全栈", "创意创新", "资源谈判", "图像算法", "视频识别", "数值策划", "用户运营", "视频算法", "数据库索引", "需求评估", "电子商务", "选题策划", "项目管理", "物料制作", "产品", "求职应聘", "APP", "推荐算法", "入职准备", "社交", "协调能力", "游戏运营", "需求分析", "渠道增长", "图像识别", "爬虫", "文案编辑", "用户研究", "数据采集", "视频编解码", "游戏策划", "流媒体封装", "音频编解码", "活动策划", "手机游戏", "视频流转码", "交互设计", "游戏制作人", "数据运营", "游戏", "高并发", "数据分析", "面试辅导", "技术", "计算广告", "运营", "SQL调优", "沟通能力", "宣传推广", "机器学习", "数据挖掘", "排版美工"]
+2019-01-26 14:40:09 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 14:40:09 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 14:40:10 DEBUG Loading model cost 0.649 seconds.
+2019-01-26 14:40:10 DEBUG Prefix dict has been built succesfully.
+2019-01-26 14:40:51 ERROR Fail to generate count vector feature 
+2019-01-26 14:41:06 INFO Start Train Model ...
+2019-01-26 14:41:06 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-26 14:41:06 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-26 14:41:06 INFO intent_labels : ["求职", "互联网", "面试", "法律"]
+2019-01-26 14:41:07 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 14:41:07 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 14:41:07 DEBUG Loading model cost 0.647 seconds.
+2019-01-26 14:41:07 DEBUG Prefix dict has been built succesfully.
+2019-01-26 14:54:48 INFO Start Train Model ...
+2019-01-26 14:54:48 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-26 14:54:48 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-26 14:54:48 INFO intent_labels : ["求职", "互联网", "法律", "面试"]
+2019-01-26 14:54:49 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 14:54:49 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 14:54:50 DEBUG Loading model cost 0.727 seconds.
+2019-01-26 14:54:50 DEBUG Prefix dict has been built succesfully.
+2019-01-26 14:55:51 INFO Start Train Model ...
+2019-01-26 14:55:51 INFO Training data format of ./data/sen_class_corp66.md is md
+2019-01-26 14:55:52 INFO Training data stats: 	- intent examples: 85662 (53 distinct intents)
+2019-01-26 14:55:52 INFO intent_labels : ["沟通能力", "流媒体封装", "计算广告", "APP", "产品", "数据库索引", "图像识别", "运营", "游戏运营", "游戏", "文案编辑", "选题策划", "项目管理", "协调能力", "视频流转码", "渠道增长", "全栈", "手机游戏", "音频编解码", "游戏制作人", "面试辅导", "创意创新", "数据运营", "数据分析", "排版美工", "视频编解码", "资源谈判", "爬虫", "视频算法", "SQL调优", "宣传推广", "图像算法", "推荐算法", "用户运营", "高并发", "交互设计", "电子商务", "技术", "机器学习", "视频识别", "数值策划", "数据采集", "游戏策划", "活动策划", "物料制作", "入职准备", "社交", "需求分析", "用户研究", "求职应聘", "数据挖掘", "需求评估", "广告算法"]
+2019-01-26 14:55:53 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 14:55:53 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 14:55:53 DEBUG Loading model cost 0.656 seconds.
+2019-01-26 14:55:53 DEBUG Prefix dict has been built succesfully.
+2019-01-26 14:57:15 INFO Start Train Model ...
+2019-01-26 14:57:15 INFO Training data format of ./data/sen_class_corp66.md is md
+2019-01-26 14:57:16 INFO Training data stats: 	- intent examples: 85662 (53 distinct intents)
+2019-01-26 14:57:16 INFO intent_labels : ["手机游戏", "SQL调优", "宣传推广", "高并发", "游戏策划", "APP", "全栈", "物料制作", "文案编辑", "资源谈判", "视频识别", "数据采集", "用户研究", "图像算法", "视频流转码", "游戏制作人", "项目管理", "游戏运营", "选题策划", "协调能力", "电子商务", "数值策划", "活动策划", "游戏", "音频编解码", "技术", "求职应聘", "创意创新", "需求分析", "计算广告", "推荐算法", "数据挖掘", "运营", "视频算法", "沟通能力", "渠道增长", "视频编解码", "广告算法", "面试辅导", "用户运营", "图像识别", "社交", "机器学习", "爬虫", "产品", "流媒体封装", "需求评估", "数据运营", "数据分析", "排版美工", "入职准备", "交互设计", "数据库索引"]
+2019-01-26 14:57:16 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 14:57:16 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 14:57:17 DEBUG Loading model cost 0.645 seconds.
+2019-01-26 14:57:17 DEBUG Prefix dict has been built succesfully.
+2019-01-26 14:59:25 INFO Dictionary size: 5242
+2019-01-26 14:59:25 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-26 14:59:50 INFO Start Train Model ...
+2019-01-26 14:59:50 INFO Training data format of ./data/sen_class_corp66.md is md
+2019-01-26 14:59:51 INFO Training data stats: 	- intent examples: 85662 (53 distinct intents)
+2019-01-26 14:59:51 INFO intent_labels : ["协调能力", "数据采集", "渠道增长", "选题策划", "电子商务", "活动策划", "运营", "音频编解码", "广告算法", "排版美工", "数据挖掘", "游戏制作人", "视频算法", "数值策划", "APP", "用户研究", "游戏运营", "交互设计", "视频识别", "入职准备", "物料制作", "用户运营", "资源谈判", "数据库索引", "技术", "流媒体封装", "文案编辑", "游戏策划", "社交", "面试辅导", "游戏", "手机游戏", "SQL调优", "高并发", "图像算法", "视频编解码", "产品", "数据运营", "求职应聘", "视频流转码", "宣传推广", "全栈", "推荐算法", "计算广告", "需求分析", "图像识别", "爬虫", "需求评估", "创意创新", "项目管理", "机器学习", "沟通能力", "数据分析"]
+2019-01-26 14:59:51 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 14:59:51 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 14:59:51 DEBUG Loading model cost 0.687 seconds.
+2019-01-26 14:59:51 DEBUG Prefix dict has been built succesfully.
+2019-01-26 15:00:01 INFO Dictionary size: 5242
+2019-01-26 15:00:01 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-26 15:00:09 INFO k-negative sampling number is 20
+2019-01-26 15:00:40 INFO Accuracy is updated every 10 epochs
+2019-01-26 15:37:08 INFO Start Train Model ...
+2019-01-26 15:37:08 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-26 15:37:09 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-26 15:37:09 INFO intent_labels : ["求职", "法律", "面试", "互联网"]
+2019-01-26 15:37:09 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 15:37:09 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 15:37:09 DEBUG Loading model cost 0.735 seconds.
+2019-01-26 15:37:09 DEBUG Prefix dict has been built succesfully.
+2019-01-26 15:37:09 ERROR Fail to generate count vector feature max_df corresponds to < documents than min_df
+2019-01-26 15:37:09 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-26 15:37:09 INFO k-negative sampling number is 3
+2019-01-26 15:37:20 INFO Accuracy is updated every 10 epochs
+2019-01-26 15:38:40 INFO Start Train Model ...
+2019-01-26 15:38:40 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-26 15:38:40 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-26 15:38:40 INFO intent_labels : ["法律", "互联网", "求职", "面试"]
+2019-01-26 15:38:40 DEBUG Building prefix dict from the default dictionary ...
+2019-01-26 15:38:40 DEBUG Loading model from cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-26 15:38:41 DEBUG Loading model cost 0.658 seconds.
+2019-01-26 15:38:41 DEBUG Prefix dict has been built succesfully.
+2019-01-26 15:38:41 INFO Dictionary size: 12
+2019-01-26 15:38:41 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-26 15:38:41 INFO k-negative sampling number is 3
+2019-01-26 15:38:44 INFO Accuracy is updated every 10 epochs
+2019-01-26 15:38:45 INFO Finished training embedding classifier, loss=0.257, train accuracy=0.900
+2019-01-26 15:38:45 INFO Model saved to D:\Python Project\classifyEntityProject\sentence_similar/models/model_20190126-153845
+2019-01-26 15:38:45 INFO Train Model Finished
+
+2019-01-29 11:05:55 INFO Start Train Model ...
+2019-01-29 11:05:55 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:05:55 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:05:55 INFO intent_labels : ["法律", "互联网", "求职", "面试"]
+2019-01-29 11:05:55 DEBUG Building prefix dict from the default dictionary ...
+2019-01-29 11:05:56 DEBUG Dumping model to file cache C:\Users\2z6bym2\AppData\Local\Temp\jieba.cache
+2019-01-29 11:05:56 DEBUG Loading model cost 1.207 seconds.
+2019-01-29 11:05:56 DEBUG Prefix dict has been built succesfully.
+2019-01-29 11:09:02 INFO Start Train Model ...
+2019-01-29 11:09:02 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:09:02 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:09:02 INFO intent_labels : ["法律", "互联网", "求职", "面试"]
+2019-01-29 11:09:51 INFO Start Train Model ...
+2019-01-29 11:09:51 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:09:51 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:09:51 INFO intent_labels : ["求职", "法律", "互联网", "面试"]
+2019-01-29 11:12:06 INFO Start Train Model ...
+2019-01-29 11:12:06 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:12:06 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:12:06 INFO intent_labels : ["互联网", "法律", "面试", "求职"]
+2019-01-29 11:14:21 INFO Start Train Model ...
+2019-01-29 11:14:21 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:14:21 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:14:21 INFO intent_labels : ["互联网", "面试", "法律", "求职"]
+2019-01-29 11:15:08 INFO Start Train Model ...
+2019-01-29 11:15:08 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:15:08 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:15:08 INFO intent_labels : ["求职", "面试", "互联网", "法律"]
+2019-01-29 11:20:00 INFO Dictionary size: 69
+2019-01-29 11:21:04 INFO Start Train Model ...
+2019-01-29 11:21:04 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:21:04 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:21:04 INFO intent_labels : ["求职", "法律", "面试", "互联网"]
+2019-01-29 11:21:04 INFO Dictionary size: 69
+2019-01-29 11:21:09 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-29 11:21:30 INFO k-negative sampling number is 3
+2019-01-29 11:21:59 INFO Accuracy is updated every 10 epochs
+2019-01-29 11:25:37 INFO Start Train Model ...
+2019-01-29 11:25:37 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:25:37 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:25:37 INFO intent_labels : ["互联网", "求职", "面试", "法律"]
+2019-01-29 11:25:37 INFO Dictionary size: 69
+2019-01-29 11:31:09 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-29 11:31:09 INFO k-negative sampling number is 3
+2019-01-29 11:31:51 INFO Start Train Model ...
+2019-01-29 11:31:51 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:31:51 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:31:51 INFO intent_labels : ["互联网", "法律", "面试", "求职"]
+2019-01-29 11:31:51 INFO Dictionary size: 69
+2019-01-29 11:31:51 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10}
+2019-01-29 11:31:51 INFO k-negative sampling number is 3
+2019-01-29 11:34:04 INFO Start Train Model ...
+2019-01-29 11:34:04 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:34:04 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:34:04 INFO intent_labels : ["面试", "互联网", "法律", "求职"]
+2019-01-29 11:34:04 INFO Dictionary size: 69
+2019-01-29 11:34:04 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10, "split_ratio": 0.8}
+2019-01-29 11:34:04 INFO k-negative sampling number is 3
+2019-01-29 11:34:48 INFO Accuracy is updated every 10 epochs
+2019-01-29 11:36:20 INFO Start Train Model ...
+2019-01-29 11:36:20 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:36:20 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:36:20 INFO intent_labels : ["面试", "互联网", "法律", "求职"]
+2019-01-29 11:36:20 INFO Dictionary size: 69
+2019-01-29 11:36:20 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10, "split_ratio": 0.8}
+2019-01-29 11:36:20 INFO k-negative sampling number is 3
+2019-01-29 11:39:01 INFO Start Train Model ...
+2019-01-29 11:39:01 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:39:01 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:39:01 INFO intent_labels : ["互联网", "法律", "面试", "求职"]
+2019-01-29 11:39:01 INFO Dictionary size: 69
+2019-01-29 11:39:01 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10, "split_ratio": 0.8}
+2019-01-29 11:39:01 INFO k-negative sampling number is 3
+2019-01-29 11:41:41 INFO Start Train Model ...
+2019-01-29 11:41:41 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:41:41 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:41:41 INFO intent_labels : ["互联网", "法律", "求职", "面试"]
+2019-01-29 11:41:41 INFO Dictionary size: 69
+2019-01-29 11:41:41 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10, "split_ratio": 0.8}
+2019-01-29 11:41:41 INFO k-negative sampling number is 3
+2019-01-29 11:46:47 INFO Start Train Model ...
+2019-01-29 11:46:47 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:46:47 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:46:47 INFO intent_labels : ["求职", "法律", "面试", "互联网"]
+2019-01-29 11:46:47 INFO Dictionary size: 69
+2019-01-29 11:46:47 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10, "split_ratio": 0.8}
+2019-01-29 11:46:47 INFO k-negative sampling number is 3
+2019-01-29 11:47:57 INFO Accuracy is updated every 10 epochs
+2019-01-29 11:51:14 INFO Start Train Model ...
+2019-01-29 11:51:14 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:51:14 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:51:14 INFO intent_labels : ["互联网", "法律", "面试", "求职"]
+2019-01-29 11:51:14 INFO Dictionary size: 69
+2019-01-29 11:51:14 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10, "split_ratio": 0.8}
+2019-01-29 11:51:14 INFO k-negative sampling number is 3
+2019-01-29 11:51:15 INFO Accuracy is updated every 10 epochs
+2019-01-29 11:51:16 INFO Finished training embedding classifier, loss=0.209, train accuracy=0.000
+2019-01-29 11:51:16 INFO Model saved to D:\Python Project\classifyEntityProject\sentence_similar/models/model_20190129-115116
+2019-01-29 11:51:17 INFO Train Model Finished
+
+2019-01-29 11:51:59 INFO Start Train Model ...
+2019-01-29 11:51:59 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:51:59 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:51:59 INFO intent_labels : ["互联网", "法律", "求职", "面试"]
+2019-01-29 11:51:59 INFO Dictionary size: 69
+2019-01-29 11:51:59 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10, "split_ratio": 0.8}
+2019-01-29 11:51:59 INFO k-negative sampling number is 3
+2019-01-29 11:52:01 INFO Accuracy is updated every 10 epochs
+2019-01-29 11:52:26 INFO Finished training embedding classifier, loss=0.213, train accuracy=0.000
+2019-01-29 11:52:26 INFO Model saved to D:\Python Project\classifyEntityProject\sentence_similar/models/model_20190129-115226
+2019-01-29 11:52:27 INFO Train Model Finished
+
+2019-01-29 11:53:34 INFO Start Train Model ...
+2019-01-29 11:53:34 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-01-29 11:53:34 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-01-29 11:53:34 INFO intent_labels : ["求职", "面试", "互联网", "法律"]
+2019-01-29 11:53:34 INFO Dictionary size: 69
+2019-01-29 11:53:34 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10, "split_ratio": 0.8}
+2019-01-29 11:53:34 INFO k-negative sampling number is 3
+2019-01-29 11:53:36 INFO Accuracy is updated every 10 epochs
+2019-01-29 11:57:48 INFO Finished training embedding classifier, loss=0.214, train accuracy=0.000
+2019-01-29 11:57:48 INFO Model saved to D:\Python Project\classifyEntityProject\sentence_similar/models/model_20190129-115748
+2019-01-29 11:57:50 INFO Train Model Finished
+
+2019-08-07 16:29:06 INFO Start Train Model ...
+2019-08-07 16:30:02 INFO Training data format of ./data/sen_class_corp1.md is md
+2019-08-07 16:30:02 INFO Training data stats: 	- intent examples: 12 (4 distinct intents)
+2019-08-07 16:30:04 INFO intent_labels : ["面试", "互联网", "求职", "法律"]
+2019-08-07 16:30:12 INFO Dictionary size: 69
+2019-08-07 16:30:23 INFO Embedding intent classifier parameter: {"hidden_layers_sizes_a": [256, 128], "hidden_layers_sizes_b": [128, 64], "batch_size": [64, 256], "epochs": 300, "embed_dim": 20, "mu_pos": 0.8, "mu_neg": -0.4, "similarity_type": "cosine", "num_neg": 20, "use_max_sim_neg": true, "random_seed": null, "C2": 0.002, "C_emb": 0.8, "droprate": 0.2, "intent_tokenization_flag": false, "intent_split_symbol": "_", "evaluate_every_num_epochs": 10, "evaluate_on_num_examples": 10, "split_ratio": 0.8}
+2019-08-07 16:35:58 INFO k-negative sampling number is 3
+2019-08-08 11:44:07 INFO Accuracy is updated every 10 epochs
