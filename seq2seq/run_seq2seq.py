@@ -10,7 +10,7 @@ from absl import flags
 import model_utils
 import seq2seq_models
 
-TaskType = 'de-en' #"nlpcc2018+hsk" #"de-en"
+TaskType = 'nlpcc2018+hsk' #"nlpcc2018+hsk" #"de-en"
 SEG_ID_A   = 0
 SEG_ID_PAD = 4
 #'''
@@ -113,6 +113,16 @@ class Seq2SeqProcessor(object):
     def __init__(self):
         self.vocab_src = None
         self.vocab_trg = None
+    def load_src_vocab(self):
+        raise NotImplementedError()
+    def load_trg_vocab(self):
+        raise NotImplementedError()
+    def get_train_examples(self):
+        raise NotImplementedError()
+    def get_dev_examples(self):
+        raise NotImplementedError()
+    def token2ids(self, sentenct):
+        raise NotImplementedError()
 
 class De2EnTranslateProcessor(Seq2SeqProcessor):
   def __init__(self):
@@ -163,10 +173,62 @@ class De2EnTranslateProcessor(Seq2SeqProcessor):
           examples.append(InputExample(guid="unused_id", source_ids=source_ids, target_ids=target_ids))
       return examples
 
+  def token2ids(self, sentence, is_source=True):
+      if is_source:
+          ids = [self.src_word2idx.get(word, 1) for word in (sentence + u" </S>").split()]  # 1: OOV, </S>: End of Text
+      else:
+          ids = [self.trg_word2idx.get(word, 1) for word in (sentence + u" </S>").split()]
+      return ids
+
 class CorrectProcessor(Seq2SeqProcessor):
     def __init__(self):
         super(CorrectProcessor, self).__init__()
-        pass
+        self.train_src_file = FLAGS.data_dir + "/train.src"
+        self.train_trg_file = FLAGS.data_dir + "/train.trg"
+        self.test_src_file = FLAGS.data_dir + "/valid.src"
+        self.test_trg_file = FLAGS.data_dir + "/valid.trg"
+        self.vocab_src_file = FLAGS.data_dir + "/vocab.src"
+        self.vocab_trg_file = FLAGS.data_dir + "/vocab.trg"
+        self.load_src_vocab()
+        self.load_trg_vocab()
+
+    def load_src_vocab(self):
+        src_vocab = [line.split()[0] for line in codecs.open(self.vocab_src_file, 'r', 'utf-8').read().splitlines() if int(line.split()[1]) >= FLAGS.min_cnt]
+        self.src_word2idx = {word: idx for idx, word in enumerate(src_vocab)}
+        self.src_idx2word = {idx: word for idx, word in enumerate(src_vocab)}
+
+    def load_trg_vocab(self):
+        trg_vocab = [line.split()[0] for line in codecs.open(self.vocab_trg_file, 'r', 'utf-8').read().splitlines() if int(line.split()[1]) >= FLAGS.min_cnt]
+        self.trg_word2idx = {word: idx for idx, word in enumerate(trg_vocab)}
+        self.trg_idx2word = {idx: word for idx, word in enumerate(trg_vocab)}
+
+    def get_train_examples(self):
+        examples = []
+        source_sents = [line.strip() for line in codecs.open(self.train_src_file, 'r', 'utf-8').readlines()]
+        target_sents = [line.strip() for line in codecs.open(self.train_trg_file, 'r', 'utf-8').readlines()]
+        for source_sent, target_sent in zip(source_sents, target_sents):
+            source_ids = [self.src_word2idx.get(word, 1) for word in (source_sent + u" </S>").split()]  # 1: OOV, </S>: End of Text
+            target_ids = [self.trg_word2idx.get(word, 1) for word in (target_sent + u" </S>").split()]
+            examples.append(InputExample(guid="unused_id", source_ids=source_ids, target_ids=target_ids))
+        return examples
+
+    def get_dev_examples(self):
+        examples = []
+        source_sents = [line.strip() for line in codecs.open(self.test_src_file, 'r', 'utf-8').readlines()]
+        target_sents = [line.strip() for line in codecs.open(self.test_trg_file, 'r', 'utf-8').readlines()]
+        for source_sent, target_sent in zip(source_sents, target_sents):
+            source_ids = [self.src_word2idx.get(word, 1) for word in (source_sent + u" </S>").split()]  # 1: OOV, </S>: End of Text
+            target_ids = [self.trg_word2idx.get(word, 1) for word in (target_sent + u" </S>").split()]
+            examples.append(InputExample(guid="unused_id", source_ids=source_ids, target_ids=target_ids))
+        return examples
+
+    def token2ids(self, sentence, is_source=True):
+        tokens = list(sentence)
+        if is_source:
+            ids = [self.src_word2idx.get(word, 1) for word in tokens] + [self.src_word2idx.get("</S>")]  # 1: OOV, </S>: End of Text
+        else:
+            ids = [self.trg_word2idx.get(word, 1) for word in tokens] + [self.src_word2idx.get("</S>")]
+        return ids
 
 def convert_single_example(ex_index, example, max_seq_length):
   """Converts a single `InputExample` into a single `InputFeatures`."""
@@ -405,6 +467,11 @@ def get_model_fn():
 
   return model_fn
 
+Processors = {
+      "de-en": De2EnTranslateProcessor,
+      "nlpcc2018+hsk": CorrectProcessor,
+  }
+
 def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -428,12 +495,7 @@ def main(_):
     tf.gfile.MakeDirs(FLAGS.model_dir)
   if not tf.gfile.Exists(FLAGS.init_checkpoint): FLAGS.init_checkpoint = None
 
-  processors = {
-      "de-en": De2EnTranslateProcessor,
-      "nlpcc2018+hsk": CorrectProcessor,
-  }
-
-  processor = processors[TaskType]()
+  processor = Processors[TaskType]()
 
   source_ntoken = len(processor.src_idx2word)
   target_ntoken = len(processor.trg_idx2word)
@@ -481,7 +543,7 @@ def main(_):
     tf.logging.info("Num of eval samples: {}".format(len(eval_examples)))
 
   if FLAGS.do_eval:
-    eval_file_base = "{}.len-{}.{}.eval.tf_record".format(spm_basename, FLAGS.max_seq_length, FLAGS.eval_split)
+    eval_file_base = "{}.len-{}.{}.eval.tf_record".format(TaskType, FLAGS.max_seq_length, FLAGS.eval_split)
     eval_file = os.path.join(FLAGS.output_dir, eval_file_base)
 
     file_based_convert_examples_to_features(eval_examples, FLAGS.max_seq_length, eval_file, FLAGS.num_passes)
@@ -532,7 +594,7 @@ def main(_):
     tf.logging.info(log_str)
 
   if FLAGS.do_predict:
-    eval_file_base = "{}.len-{}.{}.predict.tf_record".format(spm_basename, FLAGS.max_seq_length, FLAGS.eval_split)
+    eval_file_base = "{}.len-{}.{}.predict.tf_record".format(TaskType, FLAGS.max_seq_length, FLAGS.eval_split)
     eval_file = os.path.join(FLAGS.output_dir, eval_file_base)
 
     file_based_convert_examples_to_features(eval_examples, FLAGS.max_seq_length, eval_file, FLAGS.num_passes)
@@ -564,12 +626,13 @@ def main(_):
 # ********************************************** run model by session *************************************************#
 FLAGS = tf.app.flags.FLAGS
 class seq2seq:
-    def __init__(self,FLAGS=FLAGS, is_training=False):
+    def __init__(self, task_type, flag=FLAGS, is_training=False):
         tf.logging.set_verbosity(tf.logging.INFO)
-        self.input_ids = tf.placeholder(dtype=tf.int64, shape=[None, FLAGS.max_seq_length], name="input_ids")
-        self.input_mask = tf.placeholder(dtype=tf.float32, shape=[None, FLAGS.max_seq_length], name="input_mask")
-        self.output_ids = tf.placeholder(dtype=tf.int64, shape=[None, FLAGS.max_seq_length], name="output_ids")
-        self.output_mask = tf.placeholder(dtype=tf.float32, shape=[None, FLAGS.max_seq_length], name="output_mask")
+        self.flag = flag
+        self.input_ids = tf.placeholder(dtype=tf.int32, shape=[None, self.flag.max_seq_length], name="input_ids")
+        self.input_mask = tf.placeholder(dtype=tf.float32, shape=[None, self.flag.max_seq_length], name="input_mask")
+        self.output_ids = tf.placeholder(dtype=tf.int32, shape=[None, self.flag.max_seq_length], name="output_ids")
+        self.output_mask = tf.placeholder(dtype=tf.float32, shape=[None, self.flag.max_seq_length], name="output_mask")
         inp_ids = tf.transpose(self.input_ids, [1, 0])
         inp_mask = tf.transpose(self.input_mask, [1, 0])
         output_ids = self.output_ids
@@ -578,49 +641,46 @@ class seq2seq:
         decoder_inputs = tf.concat((tf.ones_like(output_ids[:, :1]) * 2, output_ids[:, :-1]), -1)  # 2代表<S>，是decoder的初始输入
         decoder_inputs = tf.transpose(decoder_inputs, [1, 0])
         self.sess = tf.Session()
-        with tf.gfile.Open(FLAGS.model_config_path) as fp:
-            config_dict = json.load(fp)
-        processor = Seq2SeqProcessor()
-        self.en_word2ids, self.en_id2words = processor.en_word2idx, processor.en_idx2word
-        self.de_word2ids = processor.de_word2idx
+        self.processor = Processors[task_type]()
+        self.trg_id2word = self.processor.trg_idx2word
         args = dict(
-            FLAGS=FLAGS,
+            FLAGS=self.flag,
             is_training=is_training,
             inp_ids=inp_ids,
             inp_mask=inp_mask,
-            source_ntoken=config_dict.get("source_ntoken"),
-            target_ntoken=config_dict.get("target_ntoken"),
+            source_ntoken=len(self.processor.src_idx2word),
+            target_ntoken=len(self.processor.trg_idx2word),
             output_mask=output_mask,
             output_ids=output_ids,
             decoder_inputs=decoder_inputs)
         self.s2sm = seq2seq_models.seq2seqmodel(**args)
         num_params = sum([np.prod(v.shape) for v in tf.trainable_variables()])
         tf.logging.info('#params: {}'.format(num_params))
-        self.s2sm.saver.restore(self.sess, FLAGS.init_checkpoint)
+        self.s2sm.saver.restore(self.sess, flag.init_checkpoint)
 
     def translate(self, sentence):
-        input_ids = [self.de_word2ids.get(word, 1) for word in (sentence + u" </S>").split()]  # 1: OOV, </S>: End of Text
-        if len(input_ids) > FLAGS.max_seq_length: input_ids = input_ids[:FLAGS.max_seq_length]
+        input_ids = self.processor.token2ids(sentence)
+        if len(input_ids) > self.flag.max_seq_length: input_ids = input_ids[:self.flag.max_seq_length]
         input_mask = [0] * len(input_ids)
-        if len(input_ids) < FLAGS.max_seq_length:
-            delta_len = FLAGS.max_seq_length - len(input_ids)
+        if len(input_ids) < self.flag.max_seq_length:
+            delta_len = self.flag.max_seq_length - len(input_ids)
             input_ids = [0] * delta_len + input_ids
             input_mask = [1] * delta_len + input_mask
         ### Autoregressive inference
         ### 在测试的时候是一个一个预测
-        preds = np.zeros((1, FLAGS.max_seq_length), np.int32)
-        output_mask = [[1] * FLAGS.max_seq_length]
-        for i in range(FLAGS.max_seq_length):
+        preds = np.zeros((1, self.flag.max_seq_length), np.int32)
+        output_mask = [[1] * self.flag.max_seq_length]
+        for i in range(self.flag.max_seq_length):
             output_mask[0][i] = 0
             _preds, adebug = self.sess.run([self.s2sm.preds, self.s2sm.debug], {self.input_ids: [input_ids], self.input_mask: [input_mask],
                                                      self.output_ids: preds, self.output_mask: output_mask})
             preds[:, i] = _preds[:, i]
         for pred in preds:
-            d=" ".join(self.en_id2words[idx] for idx in pred)
-            got = " ".join(self.en_id2words[idx] for idx in pred).split("</S>")[0].strip()
+            d=" ".join(self.trg_id2word[idx] for idx in pred)
+            got = " ".join(self.trg_id2word[idx] for idx in pred).split("</S>")[0].strip()
             a=1
 
 
 if __name__ == "__main__":
-  #s2s = seq2seq(); s2s.translate("Sehen Sie all die unterschiedlichen Teile?")
+  s2s = seq2seq(TaskType); s2s.translate("我在家里一个人学习中文。")
   tf.app.run()
