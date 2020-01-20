@@ -10,7 +10,7 @@ from absl import flags
 import model_utils
 import seq2seq_models
 
-TranslateType = "de-en"
+TaskType = 'de-en' #"nlpcc2018+hsk" #"de-en"
 SEG_ID_A   = 0
 SEG_ID_PAD = 4
 #'''
@@ -28,13 +28,13 @@ flags.DEFINE_float("init_range", default=0.1, help="Initialization std when init
 
 # I/O paths
 flags.DEFINE_bool("overwrite_data", default=False, help="If False, will use cached data if available.")
-flags.DEFINE_string("init_checkpoint", default="model/" + TranslateType + "/model.ckpt-0",
+flags.DEFINE_string("init_checkpoint", default="model/" + TaskType + "/model.ckpt-0",
       help="checkpoint path for initializing the model. "
       "Could be a pretrained model or a finetuned model.")
-flags.DEFINE_string("output_dir", default="proc_data/" + TranslateType, help="Output dir for TF records.")
+flags.DEFINE_string("output_dir", default="proc_data/" + TaskType, help="Output dir for TF records.")
 flags.DEFINE_string("spiece_model_file", default="token_model/english/spiece.model", help="Sentence Piece model path.")
-flags.DEFINE_string("model_dir", default="model/" + TranslateType, help="Directory for saving the finetuned model.")
-flags.DEFINE_string("data_dir", default="data/" + TranslateType, help="Directory for input data.")
+flags.DEFINE_string("model_dir", default="model/" + TaskType, help="Directory for saving the finetuned model.")
+flags.DEFINE_string("data_dir", default="data/" + TaskType, help="Directory for input data.")
 
 # TPUs and machines
 flags.DEFINE_bool("use_tpu", default=False, help="whether to use TPU.")
@@ -69,7 +69,7 @@ flags.DEFINE_bool("do_predict", default=True, help="whether to do prediction")
 flags.DEFINE_string("eval_split", default="dev", help="could be dev or test")
 flags.DEFINE_integer("eval_batch_size", default=8, help="batch size for evaluation")
 flags.DEFINE_integer("predict_batch_size", default=128, help="batch size for prediction.")
-flags.DEFINE_string("predict_dir", default="predict/" + TranslateType, help="Dir for saving prediction files.")
+flags.DEFINE_string("predict_dir", default="predict/" + TaskType, help="Dir for saving prediction files.")
 flags.DEFINE_bool("eval_all_ckpt", default=False, help="Eval all ckpts. If False, only evaluate the last one.")
 flags.DEFINE_string("predict_ckpt", default=None, help="Ckpt path for do_predict. If None, use the last one.")
 
@@ -82,10 +82,6 @@ flags.DEFINE_string("cls_scope", default=None, help="Classifier layer scope.")
 
 # extra parameters
 flags.DEFINE_integer("min_cnt", default=20, help="word counts whose occurred less than min_cnt are encoded as <UNK>.")
-flags.DEFINE_string("source_train", default="data/de-en/train.tags.de-en1.de", help="source sequence of train.")
-flags.DEFINE_string("target_train", default="data/de-en/train.tags.de-en1.en", help="target sequence of train.")
-flags.DEFINE_string("source_test", default="data/de-en/IWSLT16.TED.tst2014.de-en.de.xml", help="source sequence in test.")
-flags.DEFINE_string("target_test", default="data/de-en/IWSLT16.TED.tst2014.de-en.en.xml", help="target sequence in test.")
 flags.DEFINE_integer("n_layer", default=1, help="layers of transformer.")
 flags.DEFINE_integer("d_model", default=100, help="embedding of tokens.")
 flags.DEFINE_integer("n_head", default=4, help="head number of attention.")
@@ -113,31 +109,43 @@ class InputExample(object):
     self.source_ids = source_ids
     self.target_ids = target_ids
 
-class Seq2SeqProcessor():
+class Seq2SeqProcessor(object):
+    def __init__(self):
+        self.vocab_src = None
+        self.vocab_trg = None
+
+class De2EnTranslateProcessor(Seq2SeqProcessor):
   def __init__(self):
-    self.load_de_vocab()
-    self.load_en_vocab()
+      super(De2EnTranslateProcessor, self).__init__()
+      self.train_src_file = FLAGS.data_dir + "/train.tags.de-en1.de"
+      self.train_trg_file = FLAGS.data_dir + "/train.tags.de-en1.en"
+      self.test_src_file = FLAGS.data_dir + "/IWSLT16.TED.tst2014.de-en.de.xml"
+      self.test_trg_file = FLAGS.data_dir + "/IWSLT16.TED.tst2014.de-en.en.xml"
+      self.vocab_src_file = FLAGS.data_dir + "/de.vocab.tsv"
+      self.vocab_trg_file = FLAGS.data_dir + "/en.vocab.tsv"
+      self.load_src_vocab()
+      self.load_trg_vocab()
 
-  def load_de_vocab(self):
-    de_vocab = [line.split()[0] for line in codecs.open(FLAGS.data_dir + '/de.vocab.tsv', 'r', 'utf-8').read().splitlines() if int(line.split()[1]) >= FLAGS.min_cnt]
-    self.de_word2idx = {word: idx for idx, word in enumerate(de_vocab)}
-    self.de_idx2word = {idx: word for idx, word in enumerate(de_vocab)}
+  def load_src_vocab(self):
+    src_vocab = [line.split()[0] for line in codecs.open(self.vocab_src_file, 'r', 'utf-8').read().splitlines() if int(line.split()[1]) >= FLAGS.min_cnt]
+    self.src_word2idx = {word: idx for idx, word in enumerate(src_vocab)}
+    self.src_idx2word = {idx: word for idx, word in enumerate(src_vocab)}
 
-  def load_en_vocab(self):
-      en_vocab = [line.split()[0] for line in codecs.open(FLAGS.data_dir + '/en.vocab.tsv', 'r', 'utf-8').read().splitlines() if int(line.split()[1]) >= FLAGS.min_cnt]
-      self.en_word2idx = {word: idx for idx, word in enumerate(en_vocab)}
-      self.en_idx2word = {idx: word for idx, word in enumerate(en_vocab)}
+  def load_trg_vocab(self):
+      trg_vocab = [line.split()[0] for line in codecs.open(self.vocab_trg_file, 'r', 'utf-8').read().splitlines() if int(line.split()[1]) >= FLAGS.min_cnt]
+      self.trg_word2idx = {word: idx for idx, word in enumerate(trg_vocab)}
+      self.trg_idx2word = {idx: word for idx, word in enumerate(trg_vocab)}
 
   def get_train_examples(self):
       examples = []
       def _refine(line):
           line = regex.sub("[^\s\p{Latin}']", "", line)
           return line.strip()
-      source_sents = [_refine(line) for line in codecs.open(FLAGS.source_train, 'r', 'utf-8').read().split('\n') if line and line[0] != "<"]
-      target_sents = [_refine(line) for line in codecs.open(FLAGS.target_train, 'r', 'utf-8').read().split('\n') if line and line[0] != '<']
+      source_sents = [_refine(line) for line in codecs.open(self.train_src_file, 'r', 'utf-8').read().split('\n') if line and line[0] != "<"]
+      target_sents = [_refine(line) for line in codecs.open(self.train_trg_file, 'r', 'utf-8').read().split('\n') if line and line[0] != '<']
       for source_sent, target_sent in zip(source_sents, target_sents):
-          source_ids = [self.de_word2idx.get(word, 1) for word in (source_sent + u" </S>").split()]  # 1: OOV, </S>: End of Text
-          target_ids = [self.en_word2idx.get(word, 1) for word in (target_sent + u" </S>").split()]
+          source_ids = [self.src_word2idx.get(word, 1) for word in (source_sent + u" </S>").split()]  # 1: OOV, </S>: End of Text
+          target_ids = [self.trg_word2idx.get(word, 1) for word in (target_sent + u" </S>").split()]
           examples.append(InputExample(guid="unused_id", source_ids=source_ids, target_ids=target_ids))
       return examples
 
@@ -147,13 +155,18 @@ class Seq2SeqProcessor():
           line = regex.sub("<[^>]+>", "", line)
           line = regex.sub("[^\s\p{Latin}']", "", line)
           return line.strip()
-      source_sents = [_refine(line) for line in codecs.open(FLAGS.source_test, 'r', 'utf-8').read().split('\n') if line and line[:4] == "<seg"]
-      target_sents = [_refine(line) for line in codecs.open(FLAGS.target_test, 'r', 'utf-8').read().split('\n') if line and line[:4] == '<seg']
+      source_sents = [_refine(line) for line in codecs.open(self.test_src_file, 'r', 'utf-8').read().split('\n') if line and line[:4] == "<seg"]
+      target_sents = [_refine(line) for line in codecs.open(self.test_trg_file, 'r', 'utf-8').read().split('\n') if line and line[:4] == '<seg']
       for source_sent, target_sent in zip(source_sents, target_sents):
-          source_ids = [self.de_word2idx.get(word, 1) for word in (source_sent + u" </S>").split()]  # 1: OOV, </S>: End of Text
-          target_ids = [self.en_word2idx.get(word, 1) for word in (target_sent + u" </S>").split()]
+          source_ids = [self.src_word2idx.get(word, 1) for word in (source_sent + u" </S>").split()]  # 1: OOV, </S>: End of Text
+          target_ids = [self.trg_word2idx.get(word, 1) for word in (target_sent + u" </S>").split()]
           examples.append(InputExample(guid="unused_id", source_ids=source_ids, target_ids=target_ids))
       return examples
+
+class CorrectProcessor(Seq2SeqProcessor):
+    def __init__(self):
+        super(CorrectProcessor, self).__init__()
+        pass
 
 def convert_single_example(ex_index, example, max_seq_length):
   """Converts a single `InputExample` into a single `InputFeatures`."""
@@ -415,10 +428,15 @@ def main(_):
     tf.gfile.MakeDirs(FLAGS.model_dir)
   if not tf.gfile.Exists(FLAGS.init_checkpoint): FLAGS.init_checkpoint = None
 
-  processor = Seq2SeqProcessor()
+  processors = {
+      "de-en": De2EnTranslateProcessor,
+      "nlpcc2018+hsk": CorrectProcessor,
+  }
 
-  source_ntoken = len(processor.de_idx2word)
-  target_ntoken = len(processor.en_idx2word)
+  processor = processors[TaskType]()
+
+  source_ntoken = len(processor.src_idx2word)
+  target_ntoken = len(processor.trg_idx2word)
   with tf.gfile.Open(FLAGS.model_config_path, "w") as fp:
       json.dump({"source_ntoken": source_ntoken, "target_ntoken": target_ntoken}, fp, indent=4)
 
@@ -439,8 +457,7 @@ def main(_):
         config=run_config)
 
   if FLAGS.do_train:
-    train_file_base = "{}.len-{}.train.tf_record".format(
-        spm_basename, FLAGS.max_seq_length)
+    train_file_base = "{}.len-{}.train.tf_record".format(TaskType, FLAGS.max_seq_length)
     train_file = os.path.join(FLAGS.output_dir, train_file_base)
     tf.logging.info("Use tfrecord file {}".format(train_file))
 
@@ -523,7 +540,7 @@ def main(_):
     pred_input_fn = file_based_input_fn_builder(input_file=eval_file, seq_length=FLAGS.max_seq_length, is_training=False, drop_remainder=False)
 
     predict_results = []
-    with tf.gfile.Open(os.path.join(predict_dir, "{}.tsv".format(TranslateType)), "w") as fout:
+    with tf.gfile.Open(os.path.join(predict_dir, "{}.tsv".format(TaskType)), "w") as fout:
       fout.write("cnt\tsource\ttarget\n")
 
       for pred_cnt, result in enumerate(estimator.predict(
@@ -539,7 +556,7 @@ def main(_):
 
         fout.write("{}\t{}\t{}\n".format(pred_cnt, pred, output_ids))
 
-    predict_json_path = os.path.join(predict_dir, "{}.logits.json".format(TranslateType))
+    predict_json_path = os.path.join(predict_dir, "{}.logits.json".format(TaskType))
 
     with tf.gfile.Open(predict_json_path, "w") as fp:
       json.dump(predict_results, fp, indent=4)
