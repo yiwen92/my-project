@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from os.path import join
-import os, collections, json, codecs, regex
+import os, collections, json, codecs, re
 import numpy as np
 import tensorflow as tf
 import sentencepiece as spm
@@ -149,7 +149,7 @@ class De2EnTranslateProcessor(Seq2SeqProcessor):
   def get_train_examples(self):
       examples = []
       def _refine(line):
-          line = regex.sub("[^\s\p{Latin}']", "", line)
+          line = re.sub("[^\s\p{Latin}']", "", line)
           return line.strip()
       source_sents = [_refine(line) for line in codecs.open(self.train_src_file, 'r', 'utf-8').read().split('\n') if line and line[0] != "<"]
       target_sents = [_refine(line) for line in codecs.open(self.train_trg_file, 'r', 'utf-8').read().split('\n') if line and line[0] != '<']
@@ -162,8 +162,8 @@ class De2EnTranslateProcessor(Seq2SeqProcessor):
   def get_dev_examples(self):
       examples = []
       def _refine(line):
-          line = regex.sub("<[^>]+>", "", line)
-          line = regex.sub("[^\s\p{Latin}']", "", line)
+          line = re.sub("<[^>]+>", "", line)
+          line = re.sub("[^\s\p{Latin}']", "", line)
           return line.strip()
       source_sents = [_refine(line) for line in codecs.open(self.test_src_file, 'r', 'utf-8').read().split('\n') if line and line[:4] == "<seg"]
       target_sents = [_refine(line) for line in codecs.open(self.test_trg_file, 'r', 'utf-8').read().split('\n') if line and line[:4] == '<seg']
