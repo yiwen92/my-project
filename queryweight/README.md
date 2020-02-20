@@ -1,2 +1,2 @@
-基于xlnet无监督预训练模式的query weight算法模型
-包括：预训练网络的attention、每个term的idf、query的语言复杂度模型、基于xgboost决策树的学习排序模型ltr
+基于xlnet无监督预训练模式的query weight算法模型。
+包括：预训练网络的attention、每个term的idf、query的语言复杂度模型、基于xgboost决策树的学习排序模型ltr（pairwise）
