@@ -124,7 +124,7 @@ def cal_sim(vec1, vec2):
     return cosine_similarity([vec1], [vec2])[0][0]
 
 def normalization(token_weights):
-    results, weight_sum = [], 0.0
+    results, weight_sum = [], 1e-8
     tmp = [(token, 0.0) if token in PUNCTUATION_LIST or token in STOP_WORDS else (token, weight) for token, weight in token_weights]
     for token, weight in tmp: weight_sum += weight
     results = [(token, round(weight / weight_sum, 3)) for token, weight in tmp]
