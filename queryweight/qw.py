@@ -140,13 +140,13 @@ def test():
         if not match_res: continue
         query, freq = match_res.group(1), int(match_res.group(2))       #; query = "javascript开发工程师"
         res = qw.run_step(query)
-        qw_res.append(str(i) + "\t" + "\t".join([t + ":" + str(w) for t, w in res]) + "\n")
+        qw_res.append(str(i+1) + "\t" + "\t".join([t + ":" + str(w) for t, w in res]) + "\n")
         #if i > 10: break
     with open("sort_search_data.res", "w", encoding="utf8") as fin:
         fin.write("".join(qw_res))
     exit()
 
 if __name__ == "__main__":
-    test()
+    #test()
     qw = query_weight(1000000)
     qw.run_step("青岛 javascript")
