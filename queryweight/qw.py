@@ -1,10 +1,11 @@
-import xlnet, logging, kenlm
+import xlnet, logging, kenlm, re
 from seg_utils import Tokenizer, PUNCTUATION_LIST, STOP_WORDS
 from config import FLAGS, conf
 import tensorflow as tf
 from data_utils import preprocess_text, SEP_ID, CLS_ID
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from tqdm import tqdm
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -79,8 +80,8 @@ class query_weight:
         weight_attn = normalization(self.weight_attenprob(atten_prob, input_tokens))
         weight_lm = normalization(self.lm.cal_weight_lm(tokens[1:]))
         weight_idf = normalization(self.sp.cal_weight_idf(tokens[1:]))
-        weight = self.merge_weight([(weight_attn, 0.5),(weight_idf, 0.3), (weight_lm, 0.2)])
-        a=1
+        weight = self.merge_weight([(weight_attn, 0.4),(weight_idf, 0.4), (weight_lm, 0.2)])
+        return weight
 
     def merge_weight(self, weight_tuple):
         weight, weight_sum = [], 0.0
@@ -129,6 +130,21 @@ def normalization(token_weights):
     results = [(token, round(weight / weight_sum, 3)) for token, weight in tmp]
     return results
 
+def test():
+    qw = query_weight(1000000)  ; qw_res = []
+    matchObj = re.compile(r'(.+)\t ([0-9]+)', re.M | re.I)
+    for i, line in enumerate(tqdm(open("corpus/sort_search_data", encoding="utf8"))):
+        match_res = matchObj.match(line)
+        if not match_res: continue
+        query, freq = match_res.group(1), int(match_res.group(2))
+        res = qw.run_step(query)
+        qw_res.append(str(i) + "\t" + "\t".join([t + ":" + str(w) for t, w in res]) + "\n")
+        #if i > 10: break
+    with open("sort_search_data.res", "w", encoding="utf8") as fin:
+        fin.write("".join(qw_res))
+    exit()
+
 if __name__ == "__main__":
-    qw = query_weight(946000)
-    qw.run_step("android开发工程师")
+    test()
+    qw = query_weight(1000000)
+    qw.run_step("青岛 javascript")

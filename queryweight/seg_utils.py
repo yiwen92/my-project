@@ -91,8 +91,7 @@ class Tokenizer():
         return res
 
     def tokenize(self, sentence):
-        senten2term, word_seg, word_index = [], [],  0
-        #a=en_split(sentence)
+        senten2term, word_seg, word_index = [], [],  0      #; a=en_split(sentence)
         for word in en_split(sentence):
             word = word.strip().lower()
             if word in ['', ' ']: continue
@@ -129,7 +128,7 @@ class Tokenizer():
 
 if __name__ == '__main__':
     try: que = sys.argv[1]
-    except: que = "软件工程师武汉3年本科.net" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
+    except: que = "软件工程师 武汉 3年 本科 .net" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
     #nlu_seg = nlu_cut(que)
     #jieba_seg = jieba_cut("分布式文件系统")
     a0=list(jieba.cut_for_search(que)); a1=list(jieba.tokenize(que)); a2=list(jieba.cut(que))
