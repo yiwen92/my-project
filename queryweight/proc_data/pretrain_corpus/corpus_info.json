@@ -1,0 +1,1 @@
+{"vocab_size": 32000, "bsz_per_host": 32, "num_core_per_host": 1, "seq_len": 16, "reuse_len": 8, "uncased": true, "bi_data": false, "mask_alpha": 6, "mask_beta": 1, "num_predict": 8, "use_eod": true, "sp_path": "token_model/chinese/spiece.model", "input_glob": "data/pretrain_corpus/*.txt"}
