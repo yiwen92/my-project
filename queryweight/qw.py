@@ -62,11 +62,13 @@ class query_weight:
     def run_step(self, text):
         cur_sent = preprocess_text(text.strip(), lower=FLAGS.uncased)
         tokens, ids = self.sp.encode_ids(cur_sent)
-        sent_len, diff_len = len(ids), FLAGS.seq_len - len(ids)
+        sent_len, diff_len = len(ids) - 1, FLAGS.seq_len - len(ids)
+
         input_ids = ids + [SEP_ID] * (diff_len-1) + [CLS_ID]         #  cat_data = np.concatenate([inp, a_data, sep_array, b_data, sep_array, cls_array])
         input_tokens = tokens + ["<sep>"] * (diff_len-1) + ["<cls>"]
-        input_mask = [1] + [0] * (sent_len-1) + [1] * diff_len
-        segment_ids = [0] * sent_len + [2] * diff_len    # seg_id = ([0] * (reuse_len + a_data.shape[0]) + [0] + [1] * b_data.shape[0] + [1] + [2])
+        input_mask = [1] + [0] * sent_len + [1] * diff_len
+        segment_ids = [0] * (sent_len + 1) + [2] * diff_len    # seg_id = ([0] * (reuse_len + a_data.shape[0]) + [0] + [1] * b_data.shape[0] + [1] + [2])
+        input_ids, input_tokens, input_mask, segment_ids = input_ids[:FLAGS.seq_len], input_tokens[:FLAGS.seq_len], input_mask[:FLAGS.seq_len], segment_ids[:FLAGS.seq_len]
 
         logging.info("text: %s, seg_text: %s" % (text, " ".join([str(x) for x in tokens])))
         logging.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
@@ -84,7 +86,7 @@ class query_weight:
         return weight
 
     def merge_weight(self, weight_tuple):
-        weight, weight_sum = [], 0.0
+        weight, weight_sum = [], 1e-8
         for j in range(len(weight_tuple[0][0])):
             tmp = 0.0
             for i in range(len(weight_tuple)):
@@ -136,7 +138,7 @@ def test():
     for i, line in enumerate(tqdm(open("corpus/sort_search_data", encoding="utf8"))):
         match_res = matchObj.match(line)
         if not match_res: continue
-        query, freq = match_res.group(1), int(match_res.group(2))
+        query, freq = match_res.group(1), int(match_res.group(2))       #; query = "javascript开发工程师"
         res = qw.run_step(query)
         qw_res.append(str(i) + "\t" + "\t".join([t + ":" + str(w) for t, w in res]) + "\n")
         #if i > 10: break
