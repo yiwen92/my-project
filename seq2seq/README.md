@@ -1,0 +1,1 @@
+基于xlnet的transformer编码器得到的端到端翻译模型
