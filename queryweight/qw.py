@@ -20,17 +20,14 @@ class language_model:
         self.lm = kenlm.Model(conf.lm)
 
     def cal_weight_lm(self, senten2term):
-        total_score = self.lm.perplexity(' '.join(senten2term))
-        weight, weight_sum = [], 0.0
+        token_weight, total_score = [], self.lm.perplexity(' '.join(senten2term))
         for i in range(len(senten2term)):
             tmp = [senten2term[j] for j in range(len(senten2term)) if i != j]
-            score = self.lm.perplexity((' '.join(tmp)))
-            val = total_score / score
-            if senten2term[i] in PUNCTUATION_LIST or senten2term[i] in STOP_WORDS: val = 0.0
-            weight.append((senten2term[i], val))
-            weight_sum += val
-        token_weight = [(k, round(v/weight_sum, 3)) for k, v in weight]
+            val = total_score / self.lm.perplexity((' '.join(tmp)))
+            token_weight.append((senten2term[i], val))
         return token_weight
+
+special_words = ['▁' ,'<sep>', '<cls>']
 
 class query_weight:
     def __init__(self, ckpt_num=0, is_training=False):
@@ -78,11 +75,11 @@ class query_weight:
         feed_dict = {self.input_ids: [input_ids], self.segment_ids: [segment_ids], self.input_mask: [input_mask]}
         fetch = self.sess.run([self.output, self.attn_prob, self.attention_out], feed_dict)
         out_encode, atten_prob =  fetch[0], fetch[1]
-        weight0 = self.cal_weight(out_encode, input_tokens)
-        weight_attn = self.weight_attenprob(atten_prob, input_tokens)
-        weight_lm = self.lm.cal_weight_lm(tokens[1:])
-        weight_idf = self.sp.cal_weight_idf(tokens[1:])
-        weight = self.merge_weight([(weight_attn, 0.6),(weight_idf, 0.2), (weight_lm, 0.2)])
+        weight0 = normalization(self.cal_weight(out_encode, input_tokens))
+        weight_attn = normalization(self.weight_attenprob(atten_prob, input_tokens))
+        weight_lm = normalization(self.lm.cal_weight_lm(tokens[1:]))
+        weight_idf = normalization(self.sp.cal_weight_idf(tokens[1:]))
+        weight = self.merge_weight([(weight_attn, 0.5),(weight_idf, 0.3), (weight_lm, 0.2)])
         a=1
 
     def merge_weight(self, weight_tuple):
@@ -98,52 +95,40 @@ class query_weight:
         return token_weight
 
     def weight_attenprob(self, attention_probs, input_tokens):
-        weights, weights_sum = [], 0.0
-        special_words = ['▁', '<sep>', '<cls>']
+        weights = []
         (row, col, batch, dim) = attention_probs.shape
-        for i in range(col):
+        for j in range(col):
             tmp = 0.0
-            for j in range(row):
+            for i in range(row):
                 if i == j: continue
-                prob = attention_probs[j][i][0][0]
-                tmp += prob
-            if input_tokens[i] in PUNCTUATION_LIST or input_tokens[i] in STOP_WORDS: tmp = 0.0
+                tmp += attention_probs[i][j][0][0]
             weights.append(tmp)
-            weights_sum += tmp
-        for i in range(len(weights)):
-            weights[i] = round(weights[i] / weights_sum, 3)
-        token_weight = [(input_tokens[i], weights[i]) for i in range(len(weights)) if input_tokens[i] not in special_words]
-        return token_weight
+        token_weights = [(input_tokens[i], weights[i]) for i in range(len(weights)) if input_tokens[i] not in special_words]
+        return token_weights
 
     def cal_weight(self, encode_vects, input_tokens):
-        weight, weight_sum = [], 0.0
-        vects = encode_vects[0]
-        vect = np.sum(encode_vects, axis=1)[0]
-        special_words = ['▁' ,'<sep>', '<cls>']
-        for i in range(len(vects)):
-            if input_tokens[i] in special_words: continue
-            val = cal_sim(vect, vects[i])
-            if input_tokens[i] in PUNCTUATION_LIST or input_tokens[i] in STOP_WORDS: val = 0.0
-            weight.append(val)
-            weight_sum += val
-        for i in range(len(weight)):
-            weight[i] /= weight_sum
+        vects, vect = encode_vects[0], np.sum(encode_vects, axis=1)[0]
+        token_weights = [(input_tokens[i], cal_sim(vect, vects[i])) for i in range(len(vects)) if input_tokens[i] not in special_words]
         #token_weight = [(input_tokens[i], weight[i-1]) if input_tokens[i] not in special_words else (input_tokens[i], 0.0) for i in range(len(input_tokens))]
-        token_weight = [(input_tokens[i], round(weight[i - 1], 3)) for i in range(len(input_tokens)) if input_tokens[i] not in special_words]
-        return token_weight
+        return token_weights
 
 def cal_sim(vec1, vec2):
     """
     vec_sum, vec1_sum, vec2_sum = 0.0, 0.0, 0.0
     for i in range(len(vec1)):
-        vec_sum += vec1[i] * vec2[i]
-        vec1_sum += vec1[i] * vec1[i]
-        vec2_sum += vec2[i] * vec2[i]
+        vec_sum += vec1[i] * vec2[i];   vec1_sum += vec1[i] * vec1[i];  vec2_sum += vec2[i] * vec2[i]
     sim = vec_sum / (math.sqrt(vec1_sum) * math.sqrt(vec2_sum))
     return sim
     """
     return cosine_similarity([vec1], [vec2])[0][0]
 
+def normalization(token_weights):
+    results, weight_sum = [], 0.0
+    tmp = [(token, 0.0) if token in PUNCTUATION_LIST or token in STOP_WORDS else (token, weight) for token, weight in token_weights]
+    for token, weight in tmp: weight_sum += weight
+    results = [(token, round(weight / weight_sum, 3)) for token, weight in tmp]
+    return results
+
 if __name__ == "__main__":
-    qw = query_weight(801000);
-    qw.run_step("web前端 javascript");
+    qw = query_weight(946000)
+    qw.run_step("android开发工程师")

@@ -124,17 +124,12 @@ class Tokenizer():
         return self.id2word.get(Id, "<unk>")
 
     def cal_weight_idf(self, senten2term):
-        weight, weight_sum = [], 0.0
-        for w in senten2term:
-            idf_value = self.idf.get(w, 0.0)
-            weight.append((w, idf_value))
-            weight_sum += idf_value
-        token_weight = [(k, round(v / weight_sum, 3)) for k, v in weight]
+        token_weight = [(w, self.idf.get(w, 0.0)) for w in senten2term]
         return token_weight
 
 if __name__ == '__main__':
     try: que = sys.argv[1]
-    except: que = "java开发工程师" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
+    except: que = "软件工程师武汉3年本科.net" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
     #nlu_seg = nlu_cut(que)
     #jieba_seg = jieba_cut("分布式文件系统")
     a0=list(jieba.cut_for_search(que)); a1=list(jieba.tokenize(que)); a2=list(jieba.cut(que))
