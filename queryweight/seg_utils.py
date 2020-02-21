@@ -2,8 +2,9 @@ import logging, json, requests, jieba, sys, os, copy, re
 from config import conf
 
 PUNCTUATION_LIST = ".。,，,、?？:：;；{}[]【】“‘’”《》/!！%……（）<>@#$~^￥%&*\"\'=+-_——「」"
-SPECIAL_WORDS = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','2d','3d','cocos2d']
-STOP_WORDS = [e.strip() for e in open(conf.stop_words, encoding="utf8").readlines()]
+SPECIAL_WORDS = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','2d','3d','cocos2d','u-boot']
+NONE_STOPWORD = ["it"]
+STOP_WORDS = [e.strip() for e in open(conf.stop_words, encoding="utf8").readlines() if e.strip() not in NONE_STOPWORD]
 re_en = re.compile(u"([a-zA-Z]+|[0-9]+k[\+]*)",re.S)
 re_salary = re.compile(u"([0-9]+k[\+]*)",re.S)
 

@@ -1,4 +1,4 @@
-import xlnet, logging, kenlm, re
+import xlnet, logging, kenlm, re, time
 from seg_utils import Tokenizer, PUNCTUATION_LIST, STOP_WORDS
 from config import FLAGS, conf
 import tensorflow as tf
@@ -132,10 +132,11 @@ def normalization(token_weights):
     results = [(token, round(weight / weight_sum, 3)) for token, weight in tmp]
     return results
 
-def test():
+def test(path="corpus/sort_search_data"):
     qw = query_weight(1000000)  ; qw_res = []
     matchObj = re.compile(r'(.+)\t ([0-9]+)', re.M | re.I)
-    for i, line in enumerate(tqdm(open("corpus/sort_search_data", encoding="utf8"))):
+    total_num = len(open(path, encoding="utf8").readlines())
+    for i, line in enumerate(tqdm(open(path, encoding="utf8"), total=total_num)):
         match_res = matchObj.match(line)
         if not match_res: continue
         query, freq = match_res.group(1), int(match_res.group(2))       #; query = "javascript开发工程师"
@@ -147,6 +148,8 @@ def test():
     exit()
 
 if __name__ == "__main__":
-    #test()
+    query = "u-boot"
+    test()
     qw = query_weight(1000000)
-    qw.run_step("青岛 javascript")
+    t0 = time.time()   ;   res = qw.run_step(query); print("cost time %f" % (time.time() - t0))
+    pass

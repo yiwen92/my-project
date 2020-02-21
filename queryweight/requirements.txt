@@ -4,3 +4,4 @@ numpy
 tensorflow==1.12.0
 tqdm
 https://github.com/kpu/kenlm/archive/master.zip
+sklearn
