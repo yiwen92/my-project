@@ -2,9 +2,10 @@ import logging, json, requests, jieba, sys, os, copy, re
 from config import conf
 
 PUNCTUATION_LIST = ".。,，,、?？:：;；{}[]【】“‘’”《》/!！%……（）<>@#$~^￥%&*\"\'=+-_——「」"
-SPECIAL_WORDS = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','2d','3d','cocos2d','u-boot']
+SPECIAL_WORDS = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','cocos2d','u-boot','u3d','2d','3d','html5','j2ee']
 NONE_STOPWORD = ["it"]
-STOP_WORDS = [e.strip() for e in open(conf.stop_words, encoding="utf8").readlines() if e.strip() not in NONE_STOPWORD]
+CUSTOM_STOPWORD = ["人","年","大"]
+STOP_WORDS = [e.strip() for e in open(conf.stop_words, encoding="utf8").readlines() if e.strip() not in NONE_STOPWORD] + CUSTOM_STOPWORD
 re_en = re.compile(u"([a-zA-Z]+|[0-9]+k[\+]*)",re.S)
 re_salary = re.compile(u"([0-9]+k[\+]*)",re.S)
 
@@ -35,12 +36,21 @@ def nlu_cut(text):
     res = nlu.cut(text)
     return res
 
-def en_split(text):
-    text = text.lower()
-    res = []
+def check_contain(word, find_words):
+    for ele in find_words:
+        if word[0] in ele[0] and word[1] >= ele[1] and word[2] <= ele[2]:
+            return True
+    return False
+
+def en_split(text_origin):
+    text = copy.deepcopy(text_origin).lower()
+    res, find_words = [], []
     for w in SPECIAL_WORDS:
-        if text.find(w) < 0: continue
-        text = text.replace(w, ' '+w+' ')
+        index = text_origin.find(w)
+        if index < 0: continue
+        if not check_contain((w, index, index + len(w)), find_words):
+            text = text.replace(w, ' '+w+' ')
+            find_words.append((w, index, index + len(w)))
     seg_text = text.strip().split()
     for w in seg_text:
         if w in SPECIAL_WORDS:
@@ -51,13 +61,28 @@ def en_split(text):
                 res.append(e)
     return res
 
+a=en_split("j2ee")
+
+def valid_idf(token):
+    if token.isdigit() and len(token) == 1: return False    # 单个数字的idf无效
+    return True
+
+def load_place(path):
+    res = []
+    txt = [e.strip().split(",")[-1] for e in open(path, encoding="utf8").readlines()[1:]]
+    for w in txt:
+        if w.endswith("市") or w.endswith("省"): res.append(w[:-1])
+        res.append(w)
+    return res
+
+PLACE_NAMES = load_place(conf.place_names)
 class Tokenizer():
     def __init__(self):
         super(Tokenizer, self).__init__()
         self.model = jieba
         self.model.default_logger.setLevel(logging.ERROR)
         self.vocab = json.load(open(conf.vocab, encoding="utf8"))
-        self.idf = json.load(open(conf.idf, encoding="utf8"))
+        self.idf = {k: v for k, v in json.load(open(conf.idf, encoding="utf8")).items() if valid_idf(k)}
         self.id2word = {v: k for k, v in self.vocab.items()}
 
     def cut(self, text):
@@ -92,7 +117,7 @@ class Tokenizer():
         return res
 
     def tokenize(self, sentence):
-        senten2term, word_seg, word_index = [], [],  0      #; a=en_split(sentence)
+        senten2term, word_seg, word_index = [], [],  0      ; #a=en_split(sentence)
         for word in en_split(sentence):
             word = word.strip().lower()
             if word in ['', ' ']: continue
@@ -129,10 +154,10 @@ class Tokenizer():
 
 if __name__ == '__main__':
     try: que = sys.argv[1]
-    except: que = "软件工程师 武汉 3年 本科 .net" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
+    except: que = "射频微波工程师" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
     #nlu_seg = nlu_cut(que)
     #jieba_seg = jieba_cut("分布式文件系统")
-    a0=list(jieba.cut_for_search(que)); a1=list(jieba.tokenize(que)); a2=list(jieba.cut(que))
+    #a0=list(jieba.cut_for_search(que)); a1=list(jieba.tokenize(que)); a2=list(jieba.cut(que))
     #print(json.dumps(cut(que), ensure_ascii=False))   # 分词服务
     t = Tokenizer(); #a3=t.custom_cut(que); a = t.tokenize(que)
     tokens, ids = t.encode_ids(que)

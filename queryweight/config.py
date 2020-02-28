@@ -17,6 +17,8 @@ class Config:
         self.lm = os.path.join(pwd_path, "language_model/query_word.5gram.arpa")
         self.query_len = os.path.join(pwd_path, "data/query_len")
         self.stop_words = os.path.join(pwd_path, "dict/stopwords.txt")
+        self.place_names = os.path.join(pwd_path, "dict/cities.csv")
+        self.rank_model = "rank_model/query_weight_xgb.model"
 
 conf = Config()
 FLAGS = flags.FLAGS

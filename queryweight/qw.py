@@ -1,11 +1,15 @@
-import xlnet, logging, kenlm, re, time
-from seg_utils import Tokenizer, PUNCTUATION_LIST, STOP_WORDS
+import xlnet, logging, kenlm, re, time, math
+from seg_utils import Tokenizer, PUNCTUATION_LIST, STOP_WORDS, PLACE_NAMES
 from config import FLAGS, conf
 import tensorflow as tf
 from data_utils import preprocess_text, SEP_ID, CLS_ID
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
+import xgboost as xgb
+from utils import get_feature
+from xgboost import DMatrix
+from scipy import sparse
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -24,7 +28,7 @@ class language_model:
         token_weight, total_score = [], self.lm.perplexity(' '.join(senten2term))
         for i in range(len(senten2term)):
             tmp = [senten2term[j] for j in range(len(senten2term)) if i != j]
-            val = total_score / self.lm.perplexity((' '.join(tmp)))
+            val = self.lm.perplexity((' '.join(tmp))) / total_score
             token_weight.append((senten2term[i], val))
         return token_weight
 
@@ -36,6 +40,7 @@ class query_weight:
         logging.info("Init query weight model ...")
         self.sp = Tokenizer()
         self.lm = language_model()
+        self.xgb_model = xgb.Booster(model_file=conf.rank_model)
         tf.logging.set_verbosity(tf.logging.INFO)
         tf_float = tf.bfloat16 if FLAGS.use_bfloat16 else tf.float32
         self.input_ids = tf.placeholder(dtype=tf.int64, shape=[batch_size, FLAGS.seq_len], name="input_ids")
@@ -78,12 +83,30 @@ class query_weight:
         feed_dict = {self.input_ids: [input_ids], self.segment_ids: [segment_ids], self.input_mask: [input_mask]}
         fetch = self.sess.run([self.output, self.attn_prob, self.attention_out], feed_dict)
         out_encode, atten_prob =  fetch[0], fetch[1]
-        weight0 = normalization(self.cal_weight(out_encode, input_tokens))
-        weight_attn = normalization(self.weight_attenprob(atten_prob, input_tokens))
-        weight_lm = normalization(self.lm.cal_weight_lm(tokens[1:]))
+        #weight0 = normalization(self.cal_weight(out_encode, input_tokens))
+        weight_attn = normalization(self.weight_attenprob(atten_prob, tokens))
         weight_idf = normalization(self.sp.cal_weight_idf(tokens[1:]))
-        weight = self.merge_weight([(weight_attn, 0.4),(weight_idf, 0.4), (weight_lm, 0.2)])
+        weight_lm = normalization(self.lm.cal_weight_lm(tokens[1:]))
+        weight_rule = self.merge_weight([(weight_attn, 0.5),(weight_idf, 0.4), (weight_lm, 0.4)])
+        self.weight_attn, self.weight_idf, self.weight_lm = weight_attn, weight_idf, weight_lm
+        sen2terms = [e for e in tokens[1:]]
+        weight_rank = self.rank_weight(sen2terms, weight_attn, weight_idf, weight_lm)
+        weight = self.merge_weight([(weight_rank, 0.7), (weight_rule, 0.3), (weight_idf, 0.0)])        # 0.7-0.3
         return weight
+
+    def rank_weight(self, sen2terms, weight_attn, weight_idf, weight_lm):
+        tmp, score_sum = [], 1e-8
+        for term in sen2terms:
+            feature_vector, _ = get_feature(term, sen2terms, weight_attn, weight_idf, weight_lm)
+            feature = np.array(feature_vector)
+            feature_csr = sparse.csr_matrix(feature)
+            input = DMatrix(feature_csr)
+            score = self.xgb_model.predict(input)[0]
+            prob = 1.0 / (1 + math.exp(-1 * score))
+            tmp.append((term, prob))
+            score_sum += prob
+        res = [(k, round(v / score_sum, 3)) for k, v in tmp]
+        return res
 
     def merge_weight(self, weight_tuple):
         weight, weight_sum = [], 1e-8
@@ -106,7 +129,8 @@ class query_weight:
                 if i == j: continue
                 tmp += attention_probs[i][j][0][0]
             weights.append(tmp)
-        token_weights = [(input_tokens[i], weights[i]) for i in range(len(weights)) if input_tokens[i] not in special_words]
+        token_weight = [(input_tokens[i], weights[i]) for i in range(min(len(input_tokens), len(weights))) if input_tokens[i] not in special_words]
+        token_weights = token_weight + [(input_tokens[i], 0.0) for i in range(len(token_weight) + 1, len(input_tokens))]
         return token_weights
 
     def cal_weight(self, encode_vects, input_tokens):
@@ -125,31 +149,43 @@ def cal_sim(vec1, vec2):
     """
     return cosine_similarity([vec1], [vec2])[0][0]
 
+def post_process(token_weights):
+    results = []
+    for token , weight in token_weights:
+        if token.isdigit() and len(token) == 1: weight = weight * 0.2       # 单个数字降权处理
+        if token in PLACE_NAMES: weight *= 0.3              # 地名降权
+        if token in ["男", "女"]: weight *= 0.3
+        results.append((token, weight))
+    return results
+
 def normalization(token_weights):
     results, weight_sum = [], 1e-8
     tmp = [(token, 0.0) if token in PUNCTUATION_LIST or token in STOP_WORDS else (token, weight) for token, weight in token_weights]
+    tmp = post_process(tmp)
     for token, weight in tmp: weight_sum += weight
     results = [(token, round(weight / weight_sum, 3)) for token, weight in tmp]
     return results
 
-def test(path="corpus/sort_search_data"):
+def test(path):
     qw = query_weight(1000000)  ; qw_res = []
-    matchObj = re.compile(r'(.+)\t ([0-9]+)', re.M | re.I)
+    #matchObj = re.compile(r'(.+)\t ([0-9]+)', re.M | re.I)
+    matchObj = re.compile(r'(.+)\t([0-9]+)', re.M | re.I)
     total_num = len(open(path, encoding="utf8").readlines())
     for i, line in enumerate(tqdm(open(path, encoding="utf8"), total=total_num)):
         match_res = matchObj.match(line)
-        if not match_res: continue
-        query, freq = match_res.group(1), int(match_res.group(2))       #; query = "javascript开发工程师"
+        #if not match_res: continue
+        #query, freq = match_res.group(1), int(match_res.group(2))       #; query = "javascript开发工程师"
+        query = line.strip().replace("\t", "")
         res = qw.run_step(query)
         qw_res.append(str(i+1) + "\t" + "\t".join([t + ":" + str(w) for t, w in res]) + "\n")
         #if i > 10: break
-    with open("sort_search_data.res", "w", encoding="utf8") as fin:
+    with open("sort_search_data.res2", "w", encoding="utf8") as fin:
         fin.write("".join(qw_res))
     exit()
 
 if __name__ == "__main__":
-    query = "u-boot"
-    test()
+    query = "系统运维"
+    #test("get_jdcv_data/query.true")      # "corpus/sort_search_data" "get_jdcv_data/query.freq.csv" "get_jdcv_data/query.true"
     qw = query_weight(1000000)
     t0 = time.time()   ;   res = qw.run_step(query); print("cost time %f" % (time.time() - t0))
     pass
