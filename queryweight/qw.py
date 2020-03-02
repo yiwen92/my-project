@@ -87,11 +87,11 @@ class query_weight:
         weight_attn = normalization(self.weight_attenprob(atten_prob, tokens))
         weight_idf = normalization(self.sp.cal_weight_idf(tokens[1:]))
         weight_lm = normalization(self.lm.cal_weight_lm(tokens[1:]))
-        weight_rule = self.merge_weight([(weight_attn, 0.5),(weight_idf, 0.4), (weight_lm, 0.4)])
+        weight_rule = self.merge_weight([(weight_attn, 0.4),(weight_idf, 0.4), (weight_lm, 0.4)])
         self.weight_attn, self.weight_idf, self.weight_lm = weight_attn, weight_idf, weight_lm
         sen2terms = [e for e in tokens[1:]]
-        weight_rank = self.rank_weight(sen2terms, weight_attn, weight_idf, weight_lm)
-        weight = self.merge_weight([(weight_rank, 0.7), (weight_rule, 0.3), (weight_idf, 0.0)])        # 0.7-0.3
+        weight_rank = normalization(self.rank_weight(sen2terms, weight_attn, weight_idf, weight_lm))
+        weight = self.merge_weight([(weight_rank, 0.7), (weight_rule, 0.3)])        # 0.7-0.3
         return weight
 
     def rank_weight(self, sen2terms, weight_attn, weight_idf, weight_lm):
@@ -154,7 +154,7 @@ def post_process(token_weights):
     for token , weight in token_weights:
         if token.isdigit() and len(token) == 1: weight = weight * 0.2       # 单个数字降权处理
         if token in PLACE_NAMES: weight *= 0.3              # 地名降权
-        if token in ["男", "女"]: weight *= 0.3
+        if token in ["男", "女", "windows", "linux", "工程师"]: weight *= 0.3
         results.append((token, weight))
     return results
 
@@ -184,7 +184,7 @@ def test(path):
     exit()
 
 if __name__ == "__main__":
-    query = "系统运维"
+    query = "医疗器械销售"
     #test("get_jdcv_data/query.true")      # "corpus/sort_search_data" "get_jdcv_data/query.freq.csv" "get_jdcv_data/query.true"
     qw = query_weight(1000000)
     t0 = time.time()   ;   res = qw.run_step(query); print("cost time %f" % (time.time() - t0))

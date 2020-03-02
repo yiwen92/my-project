@@ -191,5 +191,5 @@ if __name__ == '__main__':
     #sample_jdcvid(jdcvidpath)       # 产生 jd-cvs id列表
     #gen_text_pairs(jdcvidpath, text_data_path)      # 得到id对应的文本数据
     #label_data(text_data_path, label_data_path)     # 对query标注权重
-    #gen_train_data(label_data_path, feature_path)
+    gen_train_data(label_data_path, feature_path)
     pass

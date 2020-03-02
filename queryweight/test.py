@@ -63,33 +63,36 @@ def cal_ndcg_train_data():
         seg_line = [(preprocess_text(e.split(":")[0]), e.split(":")[1]) for e in line]
         sorted_seg_line = sorted(seg_line, key=lambda d: d[1], reverse=True)
         rel = {k: len(sorted_seg_line)-i-1 for i, (k, v) in enumerate(sorted_seg_line)}
-        res = qw.run_step(" ".join([e[0] for e in seg_line]))
-        pred = sorted(res, key=lambda d: d[1], reverse=True)
-        label_list = [rel.get(k, 0) for k, v in pred]
-        dcg, idcg, ndcg = cal_ndcg(label_list, 6)
+        query = " ".join([e[0] for e in seg_line])
+        dcg, idcg, ndcg = get_one_query_ndcg(qw, query, rel, 1)
         ndcg_sum += ndcg
     ndcg_avg = ndcg_sum / len(text)
     print("ndcg_avg: %.3f" % (ndcg_avg))
 
 def cal_ndcg_manual_data():
     qw = query_weight(1000000); ndcg_sum = 0.0
-    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:149] if e.strip()]
-    for query, label in text:
+    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:159] if e.strip()]
+    for (query, label) in tqdm(text, total=len(text)):
         seg_label = label.split()
         rel = {e: len(seg_label)-i-1 for i, e in enumerate(seg_label)}
-        res = qw.run_step(query)
-        pred = sorted(res, key=lambda d: d[1], reverse=True)
-        label_list = [rel.get(k, 0) for k, v in pred]
-        dcg, idcg, ndcg = cal_ndcg(label_list, 30)
+        dcg, idcg, ndcg = get_one_query_ndcg(qw, query, rel, 1)
         ndcg_sum += ndcg
     ndcg_avg = ndcg_sum / len(text)
     print("ndcg_avg: %.3f" % (ndcg_avg))
+
+def get_one_query_ndcg(qw, query, rel, topk):
+    res = qw.run_step(query)
+    pred = sorted(res, key=lambda d: d[1], reverse=True)
+    label_list = [rel.get(k, 0) for k, v in pred]
+    dcg, idcg, ndcg = cal_ndcg(label_list, topk)
+    return dcg, idcg, ndcg
+
 
 if __name__ == "__main__":
     a=len("211") #"211".isdigit()
     #gen_true_data("get_jdcv_data/query.freq.csv", "get_jdcv_data/query.true")
     #test()
     #cal_feedback_ndcg()
-    #cal_ndcg_train_data()
-    cal_ndcg_manual_data()
+    cal_ndcg_train_data()
+    #cal_ndcg_manual_data()
     pass
