@@ -1,11 +1,11 @@
 import logging, json, requests, jieba, sys, os, copy, re
 from config import conf
+from utils import load_word_freq_dict, PUNCTUATION_LIST, contain_chinese_word
 
-PUNCTUATION_LIST = ".。,，,、?？:：;；{}[]【】“‘’”《》/!！%……（）<>@#$~^￥%&*\"\'=+-_——「」"
-SPECIAL_WORDS = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','cocos2d','u-boot','u3d','2d','3d','html5','j2ee']
-NONE_STOPWORD = ["it"]
-CUSTOM_STOPWORD = ["人","年","大"]
-STOP_WORDS = [e.strip() for e in open(conf.stop_words, encoding="utf8").readlines() if e.strip() not in NONE_STOPWORD] + CUSTOM_STOPWORD
+SPECIAL_WORDS_CUSTOM = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','cocos2d','u-boot','u3d','2d','3d','html5','j2ee']
+SPECIAL_WORDS_FUNC = list(set([e.lower().strip().split()[0] for e in open(conf.func_file, encoding="utf8").readlines() if not contain_chinese_word(e.strip().split()[0])]))
+SPECIAL_WORDS_INDU = list(set([e.lower().strip().split()[0] for e in open(conf.indus_file, encoding="utf8").readlines() if not contain_chinese_word(e.strip().split()[0])]))
+SPECIAL_WORDS = SPECIAL_WORDS_CUSTOM + SPECIAL_WORDS_FUNC + SPECIAL_WORDS_INDU
 re_en = re.compile(u"([a-zA-Z]+|[0-9]+k[\+]*)",re.S)
 re_salary = re.compile(u"([0-9]+k[\+]*)",re.S)
 
@@ -84,6 +84,16 @@ class Tokenizer():
         self.vocab = json.load(open(conf.vocab, encoding="utf8"))
         self.idf = {k: v for k, v in json.load(open(conf.idf, encoding="utf8")).items() if valid_idf(k)}
         self.id2word = {v: k for k, v in self.vocab.items()}
+        #self.model.set_dictionary(conf.corp_file)
+        func_dict = load_word_freq_dict(conf.func_file)
+        indus_dict = load_word_freq_dict(conf.indus_file)
+        if func_dict:
+            for w, f in func_dict.items():
+                self.model.add_word(w, freq=f)
+        if indus_dict:
+            for w, f in indus_dict.items():
+                self.model.add_word(w, freq=f)
+        #self.model.set_dictionary(conf.indus_file)
 
     def cut(self, text):
         #a0, a1=list(self.model.tokenize(text)),list(self.model.cut(text))
@@ -110,11 +120,14 @@ class Tokenizer():
         return cut_res
 
     def custom_cut(self, text):
+        '''
         res = []; #a=list(self.model.tokenize(text))
         for words, start_index, end_index in self.model.tokenize(text):
             for e in self.cut(words):
                 res.append((e[0], e[1] + start_index, e[2] + start_index))
         return res
+        '''
+        return list(self.model.tokenize(text))
 
     def tokenize(self, sentence):
         senten2term, word_seg, word_index = [], [],  0      ; #a=en_split(sentence)
@@ -154,13 +167,13 @@ class Tokenizer():
 
 if __name__ == '__main__':
     try: que = sys.argv[1]
-    except: que = "射频微波工程师" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
+    except: que = "advc#montage+深圳c++c/s5k" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
     #nlu_seg = nlu_cut(que)
     #jieba_seg = jieba_cut("分布式文件系统")
     #a0=list(jieba.cut_for_search(que)); a1=list(jieba.tokenize(que)); a2=list(jieba.cut(que))
     #print(json.dumps(cut(que), ensure_ascii=False))   # 分词服务
     t = Tokenizer(); #a3=t.custom_cut(que); a = t.tokenize(que)
     tokens, ids = t.encode_ids(que)
+    a=list(t.model.tokenize(que))
     t.cal_weight_idf(tokens[1:])
     pass
-

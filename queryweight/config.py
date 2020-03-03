@@ -19,6 +19,8 @@ class Config:
         self.stop_words = os.path.join(pwd_path, "dict/stopwords.txt")
         self.place_names = os.path.join(pwd_path, "dict/cities.csv")
         self.rank_model = "rank_model/query_weight_xgb.model"
+        self.func_file = "dict/func.txt"
+        self.indus_file = "dict/ind.txt"
 
 conf = Config()
 FLAGS = flags.FLAGS
@@ -58,7 +60,7 @@ flags.DEFINE_integer("mask_beta", default=1, help="How many tokens to mask withi
 flags.DEFINE_bool("uncased", True, help="Use uncased inputs or not.")
 flags.DEFINE_integer("bsz_per_host", 32, help="batch size per host.")
 flags.DEFINE_integer("iterations", default=1000, help="Number of iterations per repeat loop.")
-flags.DEFINE_integer("save_steps", default=500, help="Save the model for every save_steps. If None, not to save any model.")
+flags.DEFINE_integer("save_steps", default=1000, help="Save the model for every save_steps. If None, not to save any model.")
 flags.DEFINE_integer("max_seq_length", default=128, help="Max sequence length : (pretrain flags.seq_len)")
 flags.DEFINE_bool("overwrite_data", default=False, help="If False, will use cached data if available.")
 flags.DEFINE_integer("shuffle_buffer", default=2048, help="Buffer size used for shuffle.")

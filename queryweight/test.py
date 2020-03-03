@@ -1,4 +1,4 @@
-import re
+import re, json
 from seg_utils import Tokenizer
 from tqdm import tqdm
 from qw import query_weight
@@ -22,13 +22,13 @@ def gen_true_data(source_path, out_path):
 def test():
     qw = query_weight(1000000)
     pred_num, total_num = 0, 0
-    txt = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[:144]]
-    for i, (query, label) in enumerate(txt):
+    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:174]]
+    for (i, (query, label)) in enumerate(text):
         #query = "移动医疗"
         res = qw.run_step(query)
         pred = sorted(res, key=lambda d: d[1], reverse=True)[0]
-        if pred[0] == label: pred_num += 1
-        else: print(str(i+1) + "\t" + query + "\t" +" ".join([k+":"+str(v) for k, v in res]) + "\t" + pred[0] + "_" + label)
+        if pred[0] == label.split()[0]: pred_num += 1
+        else: print(str(i+1) + "\t" + query + "\t" +" ".join([k+":"+str(v) for k, v in res]) + "\t" + pred[0] + "_" + label.split()[0])
         total_num += 1
     print("acc: %f" % (round(pred_num / total_num, 3)))
     a=1
@@ -50,12 +50,12 @@ def cal_feedback_ndcg():
         dcg, idcg, ndcg = cal_ndcg(label, 20)
         query_ndcg[query] = [round(dcg, 3), round(idcg, 3), round(ndcg, 3)]
         dcg_sum += dcg; ndcg_sum += ndcg
-    sorted_query_ndcg = sorted(query_ndcg.items(), key=lambda d: d[1][2])
+    sorted_query_ndcg = sorted(query_ndcg.items(), key=lambda d: d[1][2]); print(json.dumps(query_ndcg, ensure_ascii=False))
     dcg_avg, ndcg_avg = dcg_sum / len(query_ndcg), ndcg_sum / len(query_ndcg)
     print("total query: %d\tvalid query: %d\ndcg_avg: %.3f\tndcg_avg%.3f" % (len(query_label), len(query_ndcg), dcg_avg, ndcg_avg))
     return dcg_avg, ndcg_avg
 
-def cal_ndcg_train_data():
+def cal_ndcg_train_data(topk=1):
     ndcg_sum = 0.0
     matchObj = re.compile(r'(.+)\t([0-9]+)', re.M | re.I)   ;   qw = query_weight(1000000)
     text = [e.strip().split("\t") for e in open("get_jdcv_data/label.data", encoding="utf8").readlines() if e.strip()]
@@ -64,23 +64,23 @@ def cal_ndcg_train_data():
         sorted_seg_line = sorted(seg_line, key=lambda d: d[1], reverse=True)
         rel = {k: len(sorted_seg_line)-i-1 for i, (k, v) in enumerate(sorted_seg_line)}
         query = " ".join([e[0] for e in seg_line])
-        dcg, idcg, ndcg = get_one_query_ndcg(qw, query, rel, 1)
+        dcg, idcg, ndcg = get_one_query_ndcg(qw, query, rel, topk)
         ndcg_sum += ndcg
     ndcg_avg = ndcg_sum / len(text)
-    print("ndcg_avg: %.3f" % (ndcg_avg))
+    print("ndcg_avg@%d: %.3f" % (topk, ndcg_avg))
 
-def cal_ndcg_manual_data():
+def cal_ndcg_manual_data(topk=1):
     qw = query_weight(1000000); ndcg_sum = 0.0
-    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:159] if e.strip()]
+    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:176] if e.strip()]
     for (query, label) in tqdm(text, total=len(text)):
         seg_label = label.split()
         rel = {e: len(seg_label)-i-1 for i, e in enumerate(seg_label)}
-        dcg, idcg, ndcg = get_one_query_ndcg(qw, query, rel, 1)
+        dcg, idcg, ndcg = get_one_query_ndcg(qw, query, rel, topk)
         ndcg_sum += ndcg
     ndcg_avg = ndcg_sum / len(text)
-    print("ndcg_avg: %.3f" % (ndcg_avg))
+    print("ndcg_avg@%d: %.3f" % (topk, ndcg_avg))
 
-def get_one_query_ndcg(qw, query, rel, topk):
+def get_one_query_ndcg(qw, query, rel, topk=1):
     res = qw.run_step(query)
     pred = sorted(res, key=lambda d: d[1], reverse=True)
     label_list = [rel.get(k, 0) for k, v in pred]
@@ -91,8 +91,8 @@ def get_one_query_ndcg(qw, query, rel, topk):
 if __name__ == "__main__":
     a=len("211") #"211".isdigit()
     #gen_true_data("get_jdcv_data/query.freq.csv", "get_jdcv_data/query.true")
-    #test()
+    #test(); exit()
     #cal_feedback_ndcg()
-    cal_ndcg_train_data()
-    #cal_ndcg_manual_data()
+    #cal_ndcg_train_data()
+    cal_ndcg_manual_data(1)
     pass

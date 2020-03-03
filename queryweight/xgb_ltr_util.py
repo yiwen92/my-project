@@ -112,13 +112,14 @@ def rank_query(query="产品策划"):
     return res
 
 if __name__ == "__main__":
+    query = "电话销售"
     fea = ["6 1:1 5:1 10:3 14:1 20:1 23:1 24:1 30:0.332 31:0.202 32:0.029"]
     fea.append("5 3:1 4:1 10:2 11:0.143 12:1 16:1 23:1 24:1 30:0.094 31:0.11 32:0.074")
     fea.append("4 3:1 4:1 10:2 11:0.286 14:1 15:1 23:1 27:1 30:0.18 31:0.177 32:0.289")
     #f4 = "0 3:1 4:1 10:1 11:0.5 14:1 15:1 22:1 24:1 30:0.199 31:0.301 32:0.857"
     #trans_data(data_path)
     #train(model_file=MODEL_FILE)    ;   exit()
-    res = {i: predict(f) for i, f in enumerate(fea)}
+    #res = {i: predict(f) for i, f in enumerate(fea)}
     #predict(fea[0])
-    #rank_query()
+    rank_query(query)
     pass

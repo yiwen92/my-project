@@ -1,5 +1,5 @@
-import xlnet, logging, kenlm, re, time, math
-from seg_utils import Tokenizer, PUNCTUATION_LIST, STOP_WORDS, PLACE_NAMES
+import xlnet, logging, kenlm, re, time, math, json
+from seg_utils import Tokenizer, PUNCTUATION_LIST, PLACE_NAMES
 from config import FLAGS, conf
 import tensorflow as tf
 from data_utils import preprocess_text, SEP_ID, CLS_ID
@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 import xgboost as xgb
-from utils import get_feature
+from utils import get_feature, STOP_WORDS
 from xgboost import DMatrix
 from scipy import sparse
 
@@ -36,7 +36,8 @@ special_words = ['▁' ,'<sep>', '<cls>']
 
 class query_weight:
     def __init__(self, ckpt_num=0, is_training=False):
-        init_log()  ; batch_size = 1
+        #init_log()
+        batch_size = 1
         logging.info("Init query weight model ...")
         self.sp = Tokenizer()
         self.lm = language_model()
@@ -74,11 +75,15 @@ class query_weight:
         input_mask = [1] + [0] * sent_len + [1] * diff_len
         segment_ids = [0] * (sent_len + 1) + [2] * diff_len    # seg_id = ([0] * (reuse_len + a_data.shape[0]) + [0] + [1] * b_data.shape[0] + [1] + [2])
         input_ids, input_tokens, input_mask, segment_ids = input_ids[:FLAGS.seq_len], input_tokens[:FLAGS.seq_len], input_mask[:FLAGS.seq_len], segment_ids[:FLAGS.seq_len]
-
-        logging.info("text: %s, seg_text: %s" % (text, " ".join([str(x) for x in tokens])))
-        logging.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
-        logging.info("input_mask: %s" % " ".join([str(x) for x in input_mask]))
-        logging.info("segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
+        '''
+       logging.info("text: %s, seg_text: %s" % (text, " ".join([str(x) for x in tokens])))
+       logging.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
+       logging.info("input_mask: %s" % " ".join([str(x) for x in input_mask]))
+       logging.info("segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
+       '''
+        il={'text':text,'seg_text':" ".join([str(x) for x in tokens]),'input_ids':" ".join([str(x) for x in input_ids]), \
+           'input_mask':" ".join([str(x) for x in input_mask]),'segment_ids':" ".join([str(x) for x in segment_ids])}
+        logging.info(json.dumps(il, ensure_ascii=False))
 
         feed_dict = {self.input_ids: [input_ids], self.segment_ids: [segment_ids], self.input_mask: [input_mask]}
         fetch = self.sess.run([self.output, self.attn_prob, self.attention_out], feed_dict)
@@ -87,11 +92,15 @@ class query_weight:
         weight_attn = normalization(self.weight_attenprob(atten_prob, tokens))
         weight_idf = normalization(self.sp.cal_weight_idf(tokens[1:]))
         weight_lm = normalization(self.lm.cal_weight_lm(tokens[1:]))
-        weight_rule = self.merge_weight([(weight_attn, 0.4),(weight_idf, 0.4), (weight_lm, 0.4)])
+        weight_rule = self.merge_weight([(weight_attn, 0.5),(weight_idf, 0.5), (weight_lm, 0.5)])
         self.weight_attn, self.weight_idf, self.weight_lm = weight_attn, weight_idf, weight_lm
         sen2terms = [e for e in tokens[1:]]
-        weight_rank = normalization(self.rank_weight(sen2terms, weight_attn, weight_idf, weight_lm))
-        weight = self.merge_weight([(weight_rank, 0.7), (weight_rule, 0.3)])        # 0.7-0.3
+        weightrank = self.rank_weight(sen2terms, weight_attn, weight_idf, weight_lm)
+        weight_rank = normalization(weightrank)
+        weight = self.merge_weight([(weight_rank, 0.6), (weight_rule, 0.4)])        # 0.6-0.4
+        wl = {'weight_rank':' '.join([str(k)+':'+str(v) for k, v in weight_rank]),'weight_rule':' '.join([str(k)+':'+str(v) for k, v in weight_rule]), \
+              'weight': ' '.join([str(k) + ':' + str(v) for k, v in weight])}
+        logging.info(json.dumps(wl, ensure_ascii=False))
         return weight
 
     def rank_weight(self, sen2terms, weight_attn, weight_idf, weight_lm):
@@ -154,7 +163,7 @@ def post_process(token_weights):
     for token , weight in token_weights:
         if token.isdigit() and len(token) == 1: weight = weight * 0.2       # 单个数字降权处理
         if token in PLACE_NAMES: weight *= 0.3              # 地名降权
-        if token in ["男", "女", "windows", "linux", "工程师"]: weight *= 0.3
+        if token in ["男", "女", "windows", "linux", "工程师", "开发", "程序", "计算机", "资深", "国际"]: weight *= 0.3
         results.append((token, weight))
     return results
 
@@ -184,7 +193,7 @@ def test(path):
     exit()
 
 if __name__ == "__main__":
-    query = "医疗器械销售"
+    query = "系统工程师本科	北京2-3年"
     #test("get_jdcv_data/query.true")      # "corpus/sort_search_data" "get_jdcv_data/query.freq.csv" "get_jdcv_data/query.true"
     qw = query_weight(1000000)
     t0 = time.time()   ;   res = qw.run_step(query); print("cost time %f" % (time.time() - t0))

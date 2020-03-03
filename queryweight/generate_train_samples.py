@@ -4,10 +4,10 @@ import json, traceback, re, math
 #from jdapi import JDFromGearman
 #from cvapi import get_cv_dicts
 from tqdm import tqdm
-from seg_utils import Tokenizer, PUNCTUATION_LIST, STOP_WORDS
+from seg_utils import Tokenizer, PUNCTUATION_LIST
 from collections import Counter, defaultdict
 from qw import query_weight
-from utils import get_feature
+from utils import get_feature, STOP_WORDS
 
 #jd_obj=JDFromGearman("icdc_position_basic_online", ["192.168.8.70:4730"])
 

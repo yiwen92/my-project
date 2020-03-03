@@ -1,9 +1,49 @@
-import re, json, math
-from seg_utils import PUNCTUATION_LIST, STOP_WORDS
+import re, json, math, os, logging, codecs, jieba
 from collections import defaultdict
 from tqdm import tqdm
+from config import conf
 
 re_ch = re.compile(u"([\u4e00-\u9fa5])",re.S)
+PUNCTUATION_LIST = ".。,，,、?？:：;；{}[]【】“‘’”《》/!！%……（）<>@#$~^￥%&*\"\'=+-_——「」"
+NONE_STOPWORD = ["it"]
+CUSTOM_STOPWORD = ["人","年","大"]
+STOP_WORDS = [e.strip() for e in open(conf.stop_words, encoding="utf8").readlines() if e.strip() not in NONE_STOPWORD] + CUSTOM_STOPWORD
+
+def contain_chinese_word(sentence):
+    if re_ch.findall(sentence): return True
+    return False
+
+def gen_entity_dict():
+    for file_name in ['__func__.txt', '__ind__.txt']:
+        res = []
+        text = open('dict/' + file_name, encoding='utf8').readlines()
+        sub_word = ""
+        for i, line in enumerate(text):
+            cur_word = line.strip().replace(" ", "")
+            if sub_word and contain_chinese_word(cur_word) and sub_word in cur_word and cur_word.index(sub_word) == 0:
+                pass
+            else:
+                res.append(cur_word + ' 10000\n')
+                sub_word = cur_word
+        with open('dict/' + file_name.replace("__", ""), "w", encoding="utf8") as fin:
+            fin.write("".join(res))
+
+def load_word_freq_dict(path, th=0):      # 加载词典
+    matchObj = re.compile(r'(.+) ([0-9]+)', re.M | re.I)
+    word_freq = {}
+    if not os.path.exists(path):
+        logging.warning("file not exists:" + path)
+        return word_freq
+    with codecs.open(path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith('#'): continue
+            matchRes = matchObj.match(line)
+            word, freq = matchRes.group(1), int(matchRes.group(2))
+            if freq < th: continue
+            word_freq[word] = freq
+    return word_freq
+
 def term_type(word_index, sen2terms):
     """
     0-中文: 前端开发，1-英文：web，2-数字：2000，3-符号：k，4-停用词：的，5-其它：app123
@@ -108,4 +148,5 @@ def cal_ndcg(label_list, topk):
 
 if __name__ == "__main__":
     #filter_ids("get_jdcv_data/jdcvids", "get_jdcv_data/sampleids")
-    cal_ndcg([5,6,3,2,4,1,0], 6)    #[3,2,3,0,1,2,3,0]
+    #cal_ndcg([5,6,3,2,4,1,0], 6)    #[3,2,3,0,1,2,3,0]
+    gen_entity_dict()
