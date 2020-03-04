@@ -2,10 +2,10 @@ import logging, json, requests, jieba, sys, os, copy, re
 from config import conf
 from utils import load_word_freq_dict, PUNCTUATION_LIST, contain_chinese_word
 
-SPECIAL_WORDS_CUSTOM = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','cocos2d','u-boot','u3d','2d','3d','html5','j2ee']
+SPECIAL_WORDS_CUSTOM = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','cocos2d','u-boot','u3d','2d','3d','html5','j2ee','o2o']
 SPECIAL_WORDS_FUNC = list(set([e.lower().strip().split()[0] for e in open(conf.func_file, encoding="utf8").readlines() if not contain_chinese_word(e.strip().split()[0])]))
 SPECIAL_WORDS_INDU = list(set([e.lower().strip().split()[0] for e in open(conf.indus_file, encoding="utf8").readlines() if not contain_chinese_word(e.strip().split()[0])]))
-SPECIAL_WORDS = SPECIAL_WORDS_CUSTOM + SPECIAL_WORDS_FUNC + SPECIAL_WORDS_INDU
+SPECIAL_WORDS = SPECIAL_WORDS_CUSTOM
 re_en = re.compile(u"([a-zA-Z]+|[0-9]+k[\+]*)",re.S)
 re_salary = re.compile(u"([0-9]+k[\+]*)",re.S)
 
@@ -174,6 +174,6 @@ if __name__ == '__main__':
     #print(json.dumps(cut(que), ensure_ascii=False))   # 分词服务
     t = Tokenizer(); #a3=t.custom_cut(que); a = t.tokenize(que)
     tokens, ids = t.encode_ids(que)
-    a=list(t.model.tokenize(que))
+    a=t.tokenize(que)
     t.cal_weight_idf(tokens[1:])
     pass

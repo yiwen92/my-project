@@ -33,9 +33,9 @@ def test():
     print("acc: %f" % (round(pred_num / total_num, 3)))
     a=1
 
-def cal_feedback_ndcg():
+def cal_feedback_ndcg(file_name="get_jdcv_data/feedback.res"):
     query_label, query_ndcg, dcg_sum, ndcg_sum = {}, {}, 0.0, 0.0
-    text = [e.strip().split("\t") for e in open("get_jdcv_data/feedback.res", encoding="utf8").readlines()]
+    text = [e.strip().split("\t") for e in open(file_name, encoding="utf8").readlines()]
     for i in range(len(text)):
         ele = text[i]
         if i == 0: field2id = {e: i for i, e in enumerate(ele)}
@@ -46,14 +46,14 @@ def cal_feedback_ndcg():
     for query, label in query_label.items():
         label_freq = sorted(Counter(label).items(), key=lambda d: d[1], reverse=True)
         if len(label_freq) == 1 or (len(label_freq) == 2 and label_freq[1][1] < 3):
-            print(query, '\t', label); #continue
+            pass; #print(query, '\t', label); #continue
         dcg, idcg, ndcg = cal_ndcg(label, 20)
         query_ndcg[query] = [round(dcg, 3), round(idcg, 3), round(ndcg, 3)]
         dcg_sum += dcg; ndcg_sum += ndcg
     sorted_query_ndcg = sorted(query_ndcg.items(), key=lambda d: d[1][2]); print(json.dumps(query_ndcg, ensure_ascii=False))
     dcg_avg, ndcg_avg = dcg_sum / len(query_ndcg), ndcg_sum / len(query_ndcg)
     print("total query: %d\tvalid query: %d\ndcg_avg: %.3f\tndcg_avg%.3f" % (len(query_label), len(query_ndcg), dcg_avg, ndcg_avg))
-    return dcg_avg, ndcg_avg
+    return dcg_avg, ndcg_avg, query_ndcg
 
 def cal_ndcg_train_data(topk=1):
     ndcg_sum = 0.0
@@ -87,6 +87,15 @@ def get_one_query_ndcg(qw, query, rel, topk=1):
     dcg, idcg, ndcg = cal_ndcg(label_list, topk)
     return dcg, idcg, ndcg
 
+def aa():
+    res = {}
+    dcg_avg_old, ndcg_avg_old, query_ndcg_old = cal_feedback_ndcg("get_jdcv_data/feedback2982.res")
+    dcg_avg_new, ndcg_avg_new, query_ndcg_new = cal_feedback_ndcg("get_jdcv_data/feedback2983.res")
+    for k, v in query_ndcg_old.items():
+        dcg_old, ndcg_old, dcg_new, ndcg_new = query_ndcg_old[k][0], query_ndcg_old[k][2], query_ndcg_new.get(k, [0,0,0])[0], query_ndcg_new.get(k, [0,0,0])[2]
+        res[k] = [dcg_old, ndcg_old, dcg_new, ndcg_new]
+    print(json.dumps(res, ensure_ascii=False))
+    pass
 
 if __name__ == "__main__":
     a=len("211") #"211".isdigit()
@@ -94,5 +103,6 @@ if __name__ == "__main__":
     #test(); exit()
     #cal_feedback_ndcg()
     #cal_ndcg_train_data()
-    cal_ndcg_manual_data(1)
+    #cal_ndcg_manual_data(1)
+    aa()
     pass

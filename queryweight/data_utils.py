@@ -102,7 +102,7 @@ def _create_data(idx, input_paths):
         if FLAGS.from_raw_text:
           cur_sent = preprocess_text(line.strip(), lower=FLAGS.uncased)
           #cur_sent = encode_ids(sp, cur_sent)
-          _, cur_sent = sp.encode_ids(cur_sent)
+          _, cur_sent = sp.encode_ids(cur_sent); #a=sp.encode_ids("java开发工程师")
         else:
           cur_sent = list(map(int, line.strip().split()))
 
