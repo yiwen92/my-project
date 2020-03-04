@@ -17,8 +17,9 @@ def get_res(txt):
     result = json.loads(response.buffer.read().decode("utf-8", errors='ignore'))
     http_client.close()
     return result
+
 if __name__ == '__main__':
     try: que = sys.argv[1]
-    except: que = "andriod开发工程师"
+    except: que = "大数据java"
     print(json.dumps(get_res(que), ensure_ascii=False))
 

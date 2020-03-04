@@ -5,7 +5,7 @@ from tornado.httpserver import HTTPServer
 import json, logging, logging.config, re, chardet, tornado
 from qw import query_weight
 
-qw = query_weight(1000000)
+qw = query_weight()
 
 log_conf_file = 'log4ic.conf'
 logging.config.fileConfig(log_conf_file)
@@ -17,9 +17,9 @@ class Handler(RequestHandler):
             encoding = chardet.detect(self.request.body)
             encode_type = encoding.get("encoding", "utf-8")
             req_body = self.request.body.decode(encode_type)
-            query = json.loads(req_body)["request"]["p"]["query"]
+            req_dict = json.loads(req_body)
             self.set_header('Content-Type', 'application/json') #; q=req_dict['request']['p']['query']
-            r = qw.run_step(query)  #;print(json.dumps(r, ensure_ascii=False)); exit()
+            r = qw.run(req_dict)  #;print(json.dumps(r, ensure_ascii=False)); exit()
             res = json.dumps({"header": {}, "response": {"err_no": "0", "err_msg": "", "results": r}}, ensure_ascii=False)
             self.write(res.encode(encode_type))
         except Exception as e:

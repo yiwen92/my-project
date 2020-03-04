@@ -22,7 +22,7 @@ def gen_true_data(source_path, out_path):
 def test():
     qw = query_weight()
     pred_num, total_num = 0, 0
-    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:152]]
+    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:159]]
     for (i, (query, label)) in enumerate(text):
         #query = "移动医疗"
         res = qw.run_step(query)
@@ -72,7 +72,7 @@ def cal_ndcg_train_data(topk=1):
 
 def cal_ndcg_manual_data(topk=1):
     qw = query_weight(); ndcg_sum = 0.0
-    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:152] if e.strip()]
+    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:159] if e.strip()]
     for (query, label) in tqdm(text, total=len(text)):
         seg_label = label.split()
         rel = {e: len(seg_label)-i-1 for i, e in enumerate(seg_label)}

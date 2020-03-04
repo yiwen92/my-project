@@ -157,7 +157,7 @@ class Tokenizer():
 
 if __name__ == '__main__':
     try: que = sys.argv[1]
-    except: que = "课程顾问北京" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
+    except: que = "hadoop大数据开发工程师" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
     #nlu_seg = nlu_cut(que)
     #jieba_seg = jieba_cut("分布式文件系统")
     #a0=list(jieba.cut_for_search(que)); a1=list(jieba.tokenize(que)); a2=list(jieba.cut(que))

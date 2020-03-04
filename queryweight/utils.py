@@ -38,6 +38,7 @@ def gen_entity_dict():
         for i, line in enumerate(text):
             #line = "前端开发1年"
             cur_word = line.strip().replace(" ", "")
+            if cur_word in ['开发工程']: continue
             if sub_word and contain_chinese_word(cur_word) and sub_word in cur_word and cur_word.index(sub_word) == 0: continue
             elif invalid_entity(cur_word): continue
             else:
