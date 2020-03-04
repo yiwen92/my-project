@@ -53,7 +53,7 @@ def train(model_file):
     plt.savefig('rank_model/feature_importance.png', dpi=800, format='png')
 
 xgb_model = xgb.Booster(model_file=MODEL_FILE)
-def predict(x, n_feature=32):
+def predict(x, n_feature=41):
     feature = np.array([0.0] * n_feature)
     for e in x.split(" ")[1:]:
         index, value = int(e.split(":")[0]), float(e.split(":")[1])
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     fea.append("4 3:1 4:1 10:2 11:0.286 14:1 15:1 23:1 27:1 30:0.18 31:0.177 32:0.289")
     #f4 = "0 3:1 4:1 10:1 11:0.5 14:1 15:1 22:1 24:1 30:0.199 31:0.301 32:0.857"
     #trans_data(data_path)
-    #train(model_file=MODEL_FILE)    ;   exit()
+    train(model_file=MODEL_FILE)    ;   exit()
     #res = {i: predict(f) for i, f in enumerate(fea)}
     #predict(fea[0])
     rank_query(query)

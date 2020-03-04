@@ -4,13 +4,30 @@ from tqdm import tqdm
 from config import conf
 
 re_ch = re.compile(u"([\u4e00-\u9fa5])",re.S)
+re_year = re.compile(u'([0-9]*年)', re.M | re.I)
 PUNCTUATION_LIST = ".。,，,、?？:：;；{}[]【】“‘’”《》/!！%……（）<>@#$~^￥%&*\"\'=+-_——「」"
 NONE_STOPWORD = ["it"]
 CUSTOM_STOPWORD = ["人","年","大"]
 STOP_WORDS = [e.strip() for e in open(conf.stop_words, encoding="utf8").readlines() if e.strip() not in NONE_STOPWORD] + CUSTOM_STOPWORD
 
+def load_place(path):
+    res = []
+    txt = [e.strip().split(",")[-1] for e in open(path, encoding="utf8").readlines()[1:]]
+    for w in txt:
+        if w.endswith("市") or w.endswith("省"): res.append(w[:-1])
+        res.append(w)
+    return res
+
+PLACE_NAMES = load_place(conf.place_names)
+
 def contain_chinese_word(sentence):
     if re_ch.findall(sentence): return True
+    return False
+
+def invalid_entity(word):
+    for e in PLACE_NAMES:
+        if e in word and word != e: return True     # 过滤实体中包含地址的词
+    if re_year.findall(word): return True             # 过滤实体中包含时间的词
     return False
 
 def gen_entity_dict():
@@ -19,9 +36,10 @@ def gen_entity_dict():
         text = open('dict/' + file_name, encoding='utf8').readlines()
         sub_word = ""
         for i, line in enumerate(text):
+            #line = "前端开发1年"
             cur_word = line.strip().replace(" ", "")
-            if sub_word and contain_chinese_word(cur_word) and sub_word in cur_word and cur_word.index(sub_word) == 0:
-                pass
+            if sub_word and contain_chinese_word(cur_word) and sub_word in cur_word and cur_word.index(sub_word) == 0: continue
+            elif invalid_entity(cur_word): continue
             else:
                 res.append(cur_word + ' 10000\n')
                 sub_word = cur_word
@@ -43,6 +61,8 @@ def load_word_freq_dict(path, th=0):      # 加载词典
             if freq < th: continue
             word_freq[word] = freq
     return word_freq
+FUNC_DICT = load_word_freq_dict(conf.func_file)
+INDUS_DICT = load_word_freq_dict(conf.indus_file)
 
 def term_type(word_index, sen2terms):
     """
@@ -71,6 +91,19 @@ def term_type(word_index, sen2terms):
     else: type_encode[ty_dict['other']] = 1
     return type_encode
 
+def entity_type(word_index, sen2terms):
+    """ 0-行业词，1-职能词, 3-其它 """
+    entiey_encode = [0] * 3
+    ty_dict = {'indus': 0, 'func': 1, 'other': 2}
+    if word_index < 0 or word_index >= len(sen2terms):
+        entiey_encode[ty_dict['other']] = 1
+        return entiey_encode
+    term = sen2terms[word_index]
+    if term in INDUS_DICT: entiey_encode[ty_dict['indus']] = 1
+    elif term in FUNC_DICT: entiey_encode[ty_dict['func']] = 1
+    else: entiey_encode[ty_dict['other']] = 1
+    return entiey_encode
+
 def term_position(word_index, sen2terms):
     position_encode = [0] * 3
     position_dict = {'begin': 0, 'end': 1, 'other': 2}
@@ -83,13 +116,16 @@ def get_feature(word, sen2terms, weight_attn, weight_idf, weight_lm):
     word_index = sen2terms.index(word)
     TermLength, TermOffset = [0], [0]
     TermPosition = term_position(word_index, sen2terms)     # 当前term的位置：[头部，尾部，其它]
-    TermType = term_type(word_index, sen2terms)             # 当前term的类型：[中文，英文，数字，符号，停用词，其它]
+    TermType = term_type(word_index, sen2terms)             # 当前term的类型：[中文，英文，数字，符号，停用词，其它, 职能词, 行业词]
     TermLength = [len(list(word))]                          # 当前term的字符级别长度
     TermOffset = [round(word_index / len(sen2terms), 3)]              # 当前term的偏移百分比
-    PreTermPosition = term_position(word_index - 1, sen2terms)    # 前一个term的位置：[头部，尾部，其它]
-    PreTermType = term_type(word_index - 1, sen2terms)        # 前一个term的类型：[中文，英文，数字，符号，停用词，其它]
-    BehindTermPosition = term_position(word_index + 1, sen2terms)  # 后一个term的位置：[头部，尾部，其它]
-    BehindTermType = term_type(word_index + 1, sen2terms)  # 后一个term的类型：[中文，英文，数字，符号，停用词，其它]
+    PreTermPosition = term_position(word_index - 1, sen2terms)    # 前一个term的位置
+    PreTermType = term_type(word_index - 1, sen2terms)        # 前一个term的类型
+    BehindTermPosition = term_position(word_index + 1, sen2terms)  # 后一个term的位置
+    BehindTermType = term_type(word_index + 1, sen2terms)  # 后一个term的类型
+    TermEntityType = entity_type(word_index, sen2terms)     # 当前词的实体类型：[行业词，职能词，其它]
+    PreTermEntityType = entity_type(word_index - 1, sen2terms)  # 前面词的实体类型
+    BehindTermEntityType = entity_type(word_index + 1, sen2terms)  # 后面词的实体类型
 
     features = [
         ('词的位置', TermPosition, 'term_position', len(TermPosition)),
@@ -103,6 +139,9 @@ def get_feature(word, sen2terms, weight_attn, weight_idf, weight_lm):
         ('词的attenion权重', [weight_attn[word_index][1]], 'term_attention_weight', 1),
         ('词的idf权重', [weight_idf[word_index][1]], 'term_idf_weight', 1),
         ('词的lm权重', [weight_lm[word_index][1]], 'term_lm_weight', 1),
+        ('词的实体类型', TermEntityType, 'term_entity_type', len(TermEntityType)),
+        ('前面词的实体类型', PreTermEntityType, 'pre_term_entity_type', len(PreTermEntityType)),
+        ('词的实体类型', BehindTermEntityType, 'behind_term_entity_type', len(BehindTermEntityType)),
         ]
     feature_vector = []; fidindex = 0; fmap = []
     for fid in features:

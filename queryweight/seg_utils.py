@@ -1,8 +1,9 @@
 import logging, json, requests, jieba, sys, os, copy, re
 from config import conf
-from utils import load_word_freq_dict, PUNCTUATION_LIST, contain_chinese_word
+from utils import FUNC_DICT, INDUS_DICT, PUNCTUATION_LIST, contain_chinese_word
 
-SPECIAL_WORDS_CUSTOM = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','cocos2d','u-boot','u3d','2d','3d','html5','j2ee','o2o']
+SPECIAL_WORDS_CUSTOM = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','cocos2d','u-boot','u3d','2d','3d','html5','j2ee','o2o', \
+                        '外贸销售']
 SPECIAL_WORDS_FUNC = list(set([e.lower().strip().split()[0] for e in open(conf.func_file, encoding="utf8").readlines() if not contain_chinese_word(e.strip().split()[0])]))
 SPECIAL_WORDS_INDU = list(set([e.lower().strip().split()[0] for e in open(conf.indus_file, encoding="utf8").readlines() if not contain_chinese_word(e.strip().split()[0])]))
 SPECIAL_WORDS = SPECIAL_WORDS_CUSTOM
@@ -67,15 +68,6 @@ def valid_idf(token):
     if token.isdigit() and len(token) == 1: return False    # 单个数字的idf无效
     return True
 
-def load_place(path):
-    res = []
-    txt = [e.strip().split(",")[-1] for e in open(path, encoding="utf8").readlines()[1:]]
-    for w in txt:
-        if w.endswith("市") or w.endswith("省"): res.append(w[:-1])
-        res.append(w)
-    return res
-
-PLACE_NAMES = load_place(conf.place_names)
 class Tokenizer():
     def __init__(self):
         super(Tokenizer, self).__init__()
@@ -85,13 +77,11 @@ class Tokenizer():
         self.idf = {k: v for k, v in json.load(open(conf.idf, encoding="utf8")).items() if valid_idf(k)}
         self.id2word = {v: k for k, v in self.vocab.items()}
         #self.model.set_dictionary(conf.corp_file)
-        func_dict = load_word_freq_dict(conf.func_file)
-        indus_dict = load_word_freq_dict(conf.indus_file)
-        if func_dict:
-            for w, f in func_dict.items():
+        if FUNC_DICT:
+            for w, f in FUNC_DICT.items():
                 self.model.add_word(w, freq=f)
-        if indus_dict:
-            for w, f in indus_dict.items():
+        if INDUS_DICT:
+            for w, f in INDUS_DICT.items():
                 self.model.add_word(w, freq=f)
         #self.model.set_dictionary(conf.indus_file)
 
@@ -167,7 +157,7 @@ class Tokenizer():
 
 if __name__ == '__main__':
     try: que = sys.argv[1]
-    except: que = "advc#montage+深圳c++c/s5k" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
+    except: que = "课程顾问北京" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
     #nlu_seg = nlu_cut(que)
     #jieba_seg = jieba_cut("分布式文件系统")
     #a0=list(jieba.cut_for_search(que)); a1=list(jieba.tokenize(que)); a2=list(jieba.cut(que))

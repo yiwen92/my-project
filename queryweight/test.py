@@ -20,15 +20,16 @@ def gen_true_data(source_path, out_path):
         fin.write("".join(res))
 
 def test():
-    qw = query_weight(1000000)
+    qw = query_weight()
     pred_num, total_num = 0, 0
-    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:174]]
+    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:152]]
     for (i, (query, label)) in enumerate(text):
         #query = "移动医疗"
         res = qw.run_step(query)
         pred = sorted(res, key=lambda d: d[1], reverse=True)[0]
         if pred[0] == label.split()[0]: pred_num += 1
         else: print(str(i+1) + "\t" + query + "\t" +" ".join([k+":"+str(v) for k, v in res]) + "\t" + pred[0] + "_" + label.split()[0])
+        #if set([k for k, v in res]).difference(set(label.split())): print(str(i+1), '\t', " ".join([k for k, v in res]), '\t', label)
         total_num += 1
     print("acc: %f" % (round(pred_num / total_num, 3)))
     a=1
@@ -57,7 +58,7 @@ def cal_feedback_ndcg(file_name="get_jdcv_data/feedback.res"):
 
 def cal_ndcg_train_data(topk=1):
     ndcg_sum = 0.0
-    matchObj = re.compile(r'(.+)\t([0-9]+)', re.M | re.I)   ;   qw = query_weight(1000000)
+    matchObj = re.compile(r'(.+)\t([0-9]+)', re.M | re.I)   ;   qw = query_weight()
     text = [e.strip().split("\t") for e in open("get_jdcv_data/label.data", encoding="utf8").readlines() if e.strip()]
     for line in tqdm(text, total=len(text)):
         seg_line = [(preprocess_text(e.split(":")[0]), e.split(":")[1]) for e in line]
@@ -70,8 +71,8 @@ def cal_ndcg_train_data(topk=1):
     print("ndcg_avg@%d: %.3f" % (topk, ndcg_avg))
 
 def cal_ndcg_manual_data(topk=1):
-    qw = query_weight(1000000); ndcg_sum = 0.0
-    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:176] if e.strip()]
+    qw = query_weight(); ndcg_sum = 0.0
+    text = [e.strip().split("\t") for e in open("get_jdcv_data/querytrue.txt", encoding="utf8").readlines()[1:152] if e.strip()]
     for (query, label) in tqdm(text, total=len(text)):
         seg_label = label.split()
         rel = {e: len(seg_label)-i-1 for i, e in enumerate(seg_label)}
@@ -100,9 +101,9 @@ def aa():
 if __name__ == "__main__":
     a=len("211") #"211".isdigit()
     #gen_true_data("get_jdcv_data/query.freq.csv", "get_jdcv_data/query.true")
-    #test(); exit()
+    test(); exit()
     #cal_feedback_ndcg()
     #cal_ndcg_train_data()
-    #cal_ndcg_manual_data(1)
-    aa()
+    cal_ndcg_manual_data(1)
+    #aa()
     pass

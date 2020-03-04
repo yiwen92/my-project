@@ -1,5 +1,5 @@
 import xlnet, logging, kenlm, re, time, math, json
-from seg_utils import Tokenizer, PUNCTUATION_LIST, PLACE_NAMES
+from seg_utils import Tokenizer, PUNCTUATION_LIST, SPECIAL_WORDS_CUSTOM
 from config import FLAGS, conf
 import tensorflow as tf
 from data_utils import preprocess_text, SEP_ID, CLS_ID
@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 import xgboost as xgb
-from utils import get_feature, STOP_WORDS
+from utils import get_feature, STOP_WORDS, PLACE_NAMES, FUNC_DICT, INDUS_DICT
 from xgboost import DMatrix
 from scipy import sparse
 
@@ -35,7 +35,7 @@ class language_model:
 special_words = ['▁' ,'<sep>', '<cls>']
 
 class query_weight:
-    def __init__(self, ckpt_num=0, is_training=False):
+    def __init__(self, ckpt_num=156000, is_training=False):
         #init_log()
         batch_size = 1
         logging.info("Init query weight model ...")
@@ -97,7 +97,7 @@ class query_weight:
         sen2terms = [e for e in tokens[1:]]
         weightrank = self.rank_weight(sen2terms, weight_attn, weight_idf, weight_lm)
         weight_rank = normalization(weightrank)
-        weight = self.merge_weight([(weight_rank, 0.6), (weight_rule, 0.4)])        # 0.6-0.4
+        weight = self.merge_weight([(weight_rank, 0.6), (weight_rule, 0.0)])        # 0.6-0.4
         wl = {'weight_rank':' '.join([str(k)+':'+str(v) for k, v in weight_rank]),'weight_rule':' '.join([str(k)+':'+str(v) for k, v in weight_rule]), \
               'weight': ' '.join([str(k) + ':' + str(v) for k, v in weight])}
         logging.info(json.dumps(wl, ensure_ascii=False))
@@ -163,7 +163,8 @@ def post_process(token_weights):
     for token , weight in token_weights:
         if token.isdigit() and len(token) == 1: weight = weight * 0.2       # 单个数字降权处理
         if token in PLACE_NAMES: weight *= 0.3              # 地名降权
-        if token in ["男", "女", "windows", "linux", "工程师", "开发", "程序", "计算机", "资深", "国际"]: weight *= 0.3
+        if token in ['男','女','windows','linux','工程师','开发','程序','计算机','资深','国际','师','电话','前端','硕士','员','本科','助理']: weight *= 0.3
+        if token in FUNC_DICT or token in INDUS_DICT or token in SPECIAL_WORDS_CUSTOM: weight *= 1.3     # 实体词升权
         results.append((token, weight))
     return results
 
@@ -193,8 +194,8 @@ def test(path):
     exit()
 
 if __name__ == "__main__":
-    query = "系统工程师本科	北京2-3年"
+    query = "研发经理深圳男.net"
     #test("get_jdcv_data/query.true")      # "corpus/sort_search_data" "get_jdcv_data/query.freq.csv" "get_jdcv_data/query.true"
-    qw = query_weight(1000000)
+    qw = query_weight()
     t0 = time.time()   ;   res = qw.run_step(query); print("cost time %f" % (time.time() - t0))
     pass

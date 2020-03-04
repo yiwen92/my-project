@@ -154,7 +154,7 @@ def cv_weight(cv_info, senten2term, t):
 def gen_train_data(in_path, out_path):
     matchObj = re.compile(r'(.+):([0-9\.]+)', re.M | re.I)
     res, qid = [], 0
-    qw = query_weight(1000000)
+    qw = query_weight()
     text = [e.strip().split("\t") for e in open(in_path, encoding="utf8").readlines() if e.strip()]
     for i, ele in enumerate(tqdm(text, total=len(text))):
         line_ele, sen2terms = [], []
