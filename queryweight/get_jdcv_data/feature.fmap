@@ -30,3 +30,12 @@
 29	term_attention_weight:0
 30	term_idf_weight:0
 31	term_lm_weight:0
+32	term_entity_type:0
+33	term_entity_type:1
+34	term_entity_type:2
+35	pre_term_entity_type:0
+36	pre_term_entity_type:1
+37	pre_term_entity_type:2
+38	behind_term_entity_type:0
+39	behind_term_entity_type:1
+40	behind_term_entity_type:2
