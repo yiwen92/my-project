@@ -1,0 +1,10 @@
+xgboost==1.0.1
+tensorflow==1.14.0
+sklearn
+jieba
+requests
+tqdm
+https://github.com/kpu/kenlm/archive/master.zip
+python3_gearman
+msgpack
+tornado
