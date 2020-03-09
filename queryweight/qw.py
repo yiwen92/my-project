@@ -1,4 +1,4 @@
-import xlnet, logging, kenlm, re, time, math, json, traceback
+import xlnet, logging, kenlm, re, time, math, json, traceback, sys
 from seg_utils import Tokenizer, PUNCTUATION_LIST, SPECIAL_WORDS_CUSTOM
 from config import FLAGS, conf
 import tensorflow as tf
@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 import xgboost as xgb
-from utils import get_feature, STOP_WORDS, PLACE_NAMES, FUNC_DICT, INDUS_DICT
+from utils import get_feature, STOP_WORDS, PLACE_NAMES, FUNC_DICT, INDUS_DICT, parse_xgb_dict, predict_proba
 from xgboost import DMatrix
 from scipy import sparse
 
@@ -42,6 +42,7 @@ class query_weight:
         self.sp = Tokenizer()
         self.lm = language_model()
         self.xgb_model = xgb.Booster(model_file=conf.rank_model)
+        #self.xgb_dict = parse_xgb_dict(conf.rank_model + '.txt')
         tf.logging.set_verbosity(tf.logging.INFO)
         tf_float = tf.bfloat16 if FLAGS.use_bfloat16 else tf.float32
         self.input_ids = tf.placeholder(dtype=tf.int64, shape=[batch_size, FLAGS.seq_len], name="input_ids")
@@ -66,10 +67,12 @@ class query_weight:
         logging.info("Init query weight model finished ...")
 
     def run(self, req_dict):
-        result = None
+        result = {}
         try:
             query = req_dict["request"]["p"]["query"]
-            result = self.run_step(query)
+            token_weights = self.run_step(query)
+            for t, w in token_weights:
+                result[t] = w
         except Exception as e:
             logging.warning("run_error: %s" % traceback.format_exc())
         return result
@@ -120,7 +123,8 @@ class query_weight:
             feature_csr = sparse.csr_matrix(feature)
             input = DMatrix(feature_csr)
             score = self.xgb_model.predict(input)[0]
-            prob = 1.0 / (1 + math.exp(-1 * score))
+            prob = 1.0 / (1 + math.exp(-1 * score))        # xgboost 自带的预测函数
+            #prob = predict_proba(self.xgb_dict, [feature_vector])   # 自定义的预测函数
             tmp.append((term, prob))
             score_sum += prob
         res = [(k, round(v / score_sum, 3)) for k, v in tmp]
@@ -187,7 +191,7 @@ def normalization(token_weights):
     return results
 
 def test(path):
-    qw = query_weight(1000000)  ; qw_res = []
+    qw = query_weight()  ; qw_res = []
     #matchObj = re.compile(r'(.+)\t ([0-9]+)', re.M | re.I)
     matchObj = re.compile(r'(.+)\t([0-9]+)', re.M | re.I)
     total_num = len(open(path, encoding="utf8").readlines())
@@ -204,8 +208,10 @@ def test(path):
     exit()
 
 if __name__ == "__main__":
-    query = "hadoop招聘"
+    try: query = sys.argv[1]
+    except: query = "大数据java"
+    req_dict = {"header": {}, "request": {"c": "", "m": "query_correct", "p": {"query": query}}}
     #test("get_jdcv_data/query.true")      # "corpus/sort_search_data" "get_jdcv_data/query.freq.csv" "get_jdcv_data/query.true"
     qw = query_weight()
-    t0 = time.time()   ;   res = qw.run_step(query); print("cost time %f" % (time.time() - t0))
+    t0 = time.time()   ;   res = qw.run(req_dict); print("res: %s\tcost time: %f" % (json.dumps(res, ensure_ascii=False), time.time() - t0))
     pass

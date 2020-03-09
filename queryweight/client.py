@@ -20,6 +20,6 @@ def get_res(txt):
 
 if __name__ == '__main__':
     try: que = sys.argv[1]
-    except: que = "大数据java"
+    except: que = "android开发工程师招聘"
     print(json.dumps(get_res(que), ensure_ascii=False))
 

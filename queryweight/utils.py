@@ -186,6 +186,78 @@ def cal_ndcg(label_list, topk):
     ndcg = dcg / idcg
     return dcg, idcg, ndcg
 
+def parse_xgb_dict(xgb_dump_path):
+    xgb_tree_path_dict = {};    tree_num = -1
+    with open(xgb_dump_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line.split('[')[0] == 'booster':
+                tree_num += 1
+                root = True
+                if tree_num not in xgb_tree_path_dict:
+                    xgb_tree_path_dict[tree_num] = {'decision_nodes': {}, 'root': -1}
+            else:
+                node_id = line.strip().split(':')[0]
+                if root:
+                    xgb_tree_path_dict[tree_num]['root'] = node_id
+                    root = False
+                arr = line.split('[')
+                if len(arr) == 1:  # leaf node
+                    leaf_value = line.split('=')[-1]
+                    if node_id not in xgb_tree_path_dict[tree_num]['decision_nodes']:
+                        xgb_tree_path_dict[tree_num]['decision_nodes'][node_id] = [leaf_value]
+                else:   # tree node
+                    tmp = arr[1].split(']')
+                    fid = tmp[0]
+                    feat_id, split_thr = fid.split('<')
+                    jump_nodes = tmp[1].strip().split(',')
+                    yes_node = jump_nodes[0].split('=')[-1]
+                    no_node = jump_nodes[1].split('=')[-1]
+                    missing_node = jump_nodes[2].split('=')[-1]
+                    if node_id not in xgb_tree_path_dict[tree_num]['decision_nodes']:
+                        xgb_tree_path_dict[tree_num]['decision_nodes'][node_id] = [int(feat_id.split('f')[-1]),
+                                                                                   split_thr, yes_node, no_node,
+                                                                                   missing_node]
+        return xgb_tree_path_dict
+
+def predict_proba(xgb_tree_path_dict,input_X):
+    features = input_X[0]
+    boosting_value = 0.0  # logit value
+    hit_feats = []
+    path_ids = []
+    leaf_enc = []; leaf_value = []
+    for tree_num in xgb_tree_path_dict:
+        sub_tree_path = []
+        sub_hit_nodes = {}
+        tree_info = xgb_tree_path_dict[tree_num]
+        decision_nodes = tree_info['decision_nodes']
+        root_node = tree_info['root']
+        cur_decision = decision_nodes[root_node]
+        node_id = root_node
+        while True:
+            if len(cur_decision) == 1: # leaf node
+                boosting_value += float(cur_decision[0])
+                leaf_enc.append(int(node_id))
+                break
+            else:
+                feat_id = cur_decision[0]
+                sub_tree_path.append(feat_id)
+                if feat_id not in sub_hit_nodes:
+                    sub_hit_nodes[feat_id] = 0
+                sub_hit_nodes[feat_id] += 1
+                split_thr = float(cur_decision[1])
+                yes_node = cur_decision[2]
+                no_node = cur_decision[3]
+                missing_node = cur_decision[4]
+                if features[feat_id] < split_thr:
+                    cur_decision = decision_nodes[yes_node] ; node_id = yes_node
+                else:
+                    cur_decision = decision_nodes[no_node] ; node_id = no_node
+        path_ids.append(sub_tree_path)
+        hit_feats.append(sub_hit_nodes)
+    prob = 1.0 /  ( 1 + math.exp( -1 * boosting_value) )
+    return prob
+
 if __name__ == "__main__":
     #filter_ids("get_jdcv_data/jdcvids", "get_jdcv_data/sampleids")
     #cal_ndcg([5,6,3,2,4,1,0], 6)    #[3,2,3,0,1,2,3,0]

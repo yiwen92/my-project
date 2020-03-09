@@ -1,8 +1,11 @@
 requests
 jieba
 numpy
-tensorflow==1.12.0
+tensorflow==1.14.0
 tqdm
 https://github.com/kpu/kenlm/archive/master.zip
 python3_gearman
 msgpack
+xgboost
+sklearn
+sentencepiece

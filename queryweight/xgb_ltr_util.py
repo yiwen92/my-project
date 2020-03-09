@@ -92,7 +92,7 @@ def trans_data(path):
     pass
 
 def rank_query(query="产品策划"):
-    qw = query_weight(1000000)
+    qw = query_weight()             ; xgb_sklearn = xgb.sklearn.Booster(model_file=MODEL_FILE)  ; xgb_dict = parse_xgb_dict(MODEL_FILE + '.txt')
     res0 = qw.run_step(query)
     weight_attn, weight_idf, weight_lm = qw.weight_attn, qw.weight_idf, qw.weight_lm
     sen2terms = [k for k, v in weight_attn]
@@ -102,7 +102,7 @@ def rank_query(query="产品策划"):
         feature = np.array(feature_vector)
         feature_csr = sparse.csr_matrix(feature)
         input = DMatrix(feature_csr)
-        score = xgb_model.predict(input)[0]
+        score = xgb_model.predict(input)[0]         ; s1 = xgb_sklearn.predict(input)[0]    ; s2 = predict_proba(xgb_dict, [feature_vector])
         prob = 1.0 / (1 + math.exp(-1 * score))
         tmp.append((term, prob))
         score_sum += prob
@@ -111,6 +111,82 @@ def rank_query(query="产品策划"):
     sorted_res = sorted(res, key=lambda d: d[1], reverse=True)
     return res
 
+def parse_xgb_dict(xgb_dump_path):
+    xgb_tree_path_dict = {};    tree_num = -1
+    with open(xgb_dump_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line.split('[')[0] == 'booster':
+                tree_num += 1
+                root = True
+                if tree_num not in xgb_tree_path_dict:
+                    xgb_tree_path_dict[tree_num] = {'decision_nodes': {}, 'root': -1}
+            else:
+                node_id = line.strip().split(':')[0]
+                if root:
+                    xgb_tree_path_dict[tree_num]['root'] = node_id
+                    root = False
+                arr = line.split('[')
+                if len(arr) == 1:  # leaf node
+                    leaf_value = line.split('=')[-1]
+                    if node_id not in xgb_tree_path_dict[tree_num]['decision_nodes']:
+                        xgb_tree_path_dict[tree_num]['decision_nodes'][node_id] = [leaf_value]
+                else:   # tree node
+                    tmp = arr[1].split(']')
+                    fid = tmp[0]
+                    feat_id, split_thr = fid.split('<')
+                    jump_nodes = tmp[1].strip().split(',')
+                    yes_node = jump_nodes[0].split('=')[-1]
+                    no_node = jump_nodes[1].split('=')[-1]
+                    missing_node = jump_nodes[2].split('=')[-1]
+                    if node_id not in xgb_tree_path_dict[tree_num]['decision_nodes']:
+                        xgb_tree_path_dict[tree_num]['decision_nodes'][node_id] = [int(feat_id.split('f')[-1]),
+                                                                                   split_thr, yes_node, no_node,
+                                                                                   missing_node]
+        return xgb_tree_path_dict
+
+def predict_proba(xgb_tree_path_dict,input_X):
+    features = input_X[0]
+    boosting_value = 0.0  # logit value
+    hit_feats = []
+    path_ids = []
+    leaf_enc = []; leaf_value = []
+    for tree_num in xgb_tree_path_dict:
+        sub_tree_path = []
+        sub_hit_nodes = {}
+        tree_info = xgb_tree_path_dict[tree_num]
+        decision_nodes = tree_info['decision_nodes']
+        root_node = tree_info['root']
+        cur_decision = decision_nodes[root_node]
+        node_id = root_node
+        while True:
+            if len(cur_decision) == 1: # leaf node
+                boosting_value += float(cur_decision[0])
+                leaf_enc.append(int(node_id))
+                break
+            else:
+                feat_id = cur_decision[0]
+                sub_tree_path.append(feat_id)
+                if feat_id not in sub_hit_nodes:
+                    sub_hit_nodes[feat_id] = 0
+                sub_hit_nodes[feat_id] += 1
+                split_thr = float(cur_decision[1])
+                yes_node = cur_decision[2]
+                no_node = cur_decision[3]
+                missing_node = cur_decision[4]
+                if features[feat_id] > split_thr: cur_decision = decision_nodes[no_node]
+                else: cur_decision = decision_nodes[yes_node]
+                '''
+                if features[feat_id] < split_thr:
+                    cur_decision = decision_nodes[yes_node] ; node_id = yes_node
+                else:
+                    cur_decision = decision_nodes[no_node] ; node_id = no_node
+               '''
+        path_ids.append(sub_tree_path)
+        hit_feats.append(sub_hit_nodes)
+    prob = 1.0 /  ( 1 + math.exp( -1 * boosting_value) )
+    return prob
+
 if __name__ == "__main__":
     query = "电话销售"
     fea = ["6 1:1 5:1 10:3 14:1 20:1 23:1 24:1 30:0.332 31:0.202 32:0.029"]
@@ -118,7 +194,7 @@ if __name__ == "__main__":
     fea.append("4 3:1 4:1 10:2 11:0.286 14:1 15:1 23:1 27:1 30:0.18 31:0.177 32:0.289")
     #f4 = "0 3:1 4:1 10:1 11:0.5 14:1 15:1 22:1 24:1 30:0.199 31:0.301 32:0.857"
     #trans_data(data_path)
-    train(model_file=MODEL_FILE)    ;   exit()
+    #train(model_file=MODEL_FILE)    ;   exit()
     #res = {i: predict(f) for i, f in enumerate(fea)}
     #predict(fea[0])
     rank_query(query)
