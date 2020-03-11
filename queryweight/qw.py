@@ -209,7 +209,7 @@ def test(path):
 
 if __name__ == "__main__":
     try: query = sys.argv[1]
-    except: query = "大数据java"
+    except: query = "java开发"
     req_dict = {"header": {}, "request": {"c": "", "m": "query_correct", "p": {"query": query}}}
     #test("get_jdcv_data/query.true")      # "corpus/sort_search_data" "get_jdcv_data/query.freq.csv" "get_jdcv_data/query.true"
     qw = query_weight()

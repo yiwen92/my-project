@@ -53,7 +53,7 @@ def cal_feedback_ndcg(file_name="get_jdcv_data/feedback.res"):
         dcg_sum += dcg; ndcg_sum += ndcg
     sorted_query_ndcg = sorted(query_ndcg.items(), key=lambda d: d[1][2]); print(json.dumps(query_ndcg, ensure_ascii=False))
     dcg_avg, ndcg_avg = dcg_sum / len(query_ndcg), ndcg_sum / len(query_ndcg)
-    print("total query: %d\tvalid query: %d\ndcg_avg: %.3f\tndcg_avg%.3f" % (len(query_label), len(query_ndcg), dcg_avg, ndcg_avg))
+    print("total query: %d\tvalid query: %d\ndcg_avg: %.3f\tndcg_avg: %.3f" % (len(query_label), len(query_ndcg), dcg_avg, ndcg_avg))
     return dcg_avg, ndcg_avg, query_ndcg
 
 def cal_ndcg_train_data(topk=1):
@@ -101,9 +101,9 @@ def aa():
 if __name__ == "__main__":
     a=len("211") #"211".isdigit()
     #gen_true_data("get_jdcv_data/query.freq.csv", "get_jdcv_data/query.true")
-    test(); exit()
-    #cal_feedback_ndcg()
+    #test(); exit()
+    cal_feedback_ndcg("get_jdcv_data/feedback2992.res")
     #cal_ndcg_train_data()
-    cal_ndcg_manual_data(1)
+    #cal_ndcg_manual_data(1)
     #aa()
     pass
