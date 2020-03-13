@@ -21,7 +21,7 @@ class Handler(RequestHandler):
             self.set_header('Content-Type', 'application/json') #; q=req_dict['request']['p']['query']
             r = qw.run(req_dict)  #;print(json.dumps(r, ensure_ascii=False)); exit()
             res = json.dumps({"header": {}, "response": {"err_no": "0", "err_msg": "", "results": r}}, ensure_ascii=False)
-            self.write(res.encode(encode_type))
+            self.write(res)
         except Exception as e:
             logging.warn('__post_failed, req=%s, exception=[%s]' % (json.dumps(req_dict,ensure_ascii=False), str(e)))
 

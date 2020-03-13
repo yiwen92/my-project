@@ -51,9 +51,9 @@ def cal_feedback_ndcg(file_name="get_jdcv_data/feedback.res"):
         dcg, idcg, ndcg = cal_ndcg(label, 20)
         query_ndcg[query] = [round(dcg, 3), round(idcg, 3), round(ndcg, 3)]
         dcg_sum += dcg; ndcg_sum += ndcg
-    sorted_query_ndcg = sorted(query_ndcg.items(), key=lambda d: d[1][2]); print(json.dumps(query_ndcg, ensure_ascii=False))
+    sorted_query_ndcg = sorted(query_ndcg.items(), key=lambda d: d[1][2]); #print(json.dumps(query_ndcg, ensure_ascii=False))
     dcg_avg, ndcg_avg = dcg_sum / len(query_ndcg), ndcg_sum / len(query_ndcg)
-    print("total query: %d\tvalid query: %d\ndcg_avg: %.3f\tndcg_avg: %.3f" % (len(query_label), len(query_ndcg), dcg_avg, ndcg_avg))
+    print("file_name: %s\ttotal query: %d\tvalid query: %d\tdcg_avg: %.3f\tndcg_avg: %.3f" % (file_name, len(query_label), len(query_ndcg), dcg_avg, ndcg_avg))
     return dcg_avg, ndcg_avg, query_ndcg
 
 def cal_ndcg_train_data(topk=1):
@@ -91,19 +91,40 @@ def get_one_query_ndcg(qw, query, rel, topk=1):
 def aa():
     res = {}
     dcg_avg_old, ndcg_avg_old, query_ndcg_old = cal_feedback_ndcg("get_jdcv_data/feedback2982.res")
-    dcg_avg_new, ndcg_avg_new, query_ndcg_new = cal_feedback_ndcg("get_jdcv_data/feedback2983.res")
+    dcg_avg_new, ndcg_avg_new, query_ndcg_new = cal_feedback_ndcg("get_jdcv_data/feedback2996.res")
     for k, v in query_ndcg_old.items():
         dcg_old, ndcg_old, dcg_new, ndcg_new = query_ndcg_old[k][0], query_ndcg_old[k][2], query_ndcg_new.get(k, [0,0,0])[0], query_ndcg_new.get(k, [0,0,0])[2]
         res[k] = [dcg_old, ndcg_old, dcg_new, ndcg_new]
-    print(json.dumps(res, ensure_ascii=False))
+    #print(json.dumps(res, ensure_ascii=False))
     pass
+
+def cal_weight_effect():
+    dcg_new, ndcg_new, dcg_baseline, ndcg_baseline = 1e-8, 1e-8, 1e-8, 1e-8
+    text = [e.strip().split("\t") for e in open("get_jdcv_data/feedback2982.res", encoding="utf8").readlines()]
+    text_baseline = [e.strip().split("\t") for e in open("get_jdcv_data/feedback2982.res.txt.baseline", encoding="utf8").readlines()]
+    text_new = [e.strip().split("\t") for e in open("get_jdcv_data/feedback2982.res.txt", encoding="utf8").readlines()]
+    label_score = {"_".join([keyword, cv_id]): is_correct for id, rank, cv_id, pid, task_id, is_correct, createtime, keyword in text[1:]}
+    for keyword, cv_ids in text_baseline:
+        label_list = [label_score.get("_".join([keyword, e]), 0) for e in cv_ids.split()]
+        dcg, idcg, ndcg = cal_ndcg(label_list, 15)
+        dcg_baseline += dcg; ndcg_baseline += ndcg
+    avg_dcg_baseline = dcg_baseline / len(text_baseline); avg_ndcg_baseline = ndcg_baseline / len(text_baseline)
+    for keyword, cv_ids in text_new:
+        label_list = [label_score.get("_".join([keyword, e]), 0) for e in cv_ids.split()]
+        dcg, idcg, ndcg = cal_ndcg(label_list, 15)
+        dcg_new += dcg; ndcg_new += ndcg
+    avg_dcg_new = dcg_new / len(text_new); avg_ndcg_new = ndcg_new / len(text_new)
+    print("avg_dcg_baseline: %.6f\tavg_ndcg_baseline: %.6f\navg_dcg_new: %.6f\tavg_ndcg_new: %.6f" % \
+          (avg_dcg_baseline, avg_ndcg_baseline, avg_dcg_new, avg_ndcg_new))
+    a=1
 
 if __name__ == "__main__":
     a=len("211") #"211".isdigit()
     #gen_true_data("get_jdcv_data/query.freq.csv", "get_jdcv_data/query.true")
     #test(); exit()
-    cal_feedback_ndcg("get_jdcv_data/feedback2992.res")
+    #cal_feedback_ndcg("get_jdcv_data/feedback2982.res")
     #cal_ndcg_train_data()
     #cal_ndcg_manual_data(1)
     #aa()
+    cal_weight_effect()
     pass

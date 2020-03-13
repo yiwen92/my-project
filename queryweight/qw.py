@@ -37,6 +37,7 @@ special_words = ['▁' ,'<sep>', '<cls>']
 class query_weight:
     def __init__(self, ckpt_num=156000, is_training=False):
         #init_log()
+        self.logs = {}
         batch_size = 1
         logging.info("Init query weight model ...")
         self.sp = Tokenizer()
@@ -66,7 +67,17 @@ class query_weight:
         # scaffold_fn = model_utils.init_from_checkpoint(FLAGS)
         logging.info("Init query weight model finished ...")
 
+    def on_weight_begin(self):
+         logging.debug('on_weight_begin')
+         self.t_begin = time.time()
+
+    def on_weight_end(self):
+         logging.debug('on_weight_end')
+         phead = '[on_weight_end] | log_info=%s | cost=%.3fs'
+         logging.info(phead % (json.dumps(self.logs, ensure_ascii=False), (time.time()-self.t_begin)))
+
     def run(self, req_dict):
+        self.on_weight_begin()
         result = {}
         try:
             query = req_dict["request"]["p"]["query"]
@@ -75,6 +86,7 @@ class query_weight:
                 result[t] = w
         except Exception as e:
             logging.warning("run_error: %s" % traceback.format_exc())
+        self.on_weight_end()
         return result
 
     def run_step(self, text):
@@ -93,9 +105,9 @@ class query_weight:
        logging.info("input_mask: %s" % " ".join([str(x) for x in input_mask]))
        logging.info("segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
        '''
-        il={'text':text,'seg_text':" ".join([str(x) for x in tokens]),'input_ids':" ".join([str(x) for x in input_ids]), \
+        self.logs['xlnet_input_info'] = {'text':text,'seg_text':" ".join([str(x) for x in tokens]),'input_ids':" ".join([str(x) for x in input_ids]), \
            'input_mask':" ".join([str(x) for x in input_mask]),'segment_ids':" ".join([str(x) for x in segment_ids])}
-        logging.info(json.dumps(il, ensure_ascii=False))
+        #logging.info(json.dumps(il, ensure_ascii=False))
 
         feed_dict = {self.input_ids: [input_ids], self.segment_ids: [segment_ids], self.input_mask: [input_mask]}
         fetch = self.sess.run([self.output, self.attn_prob, self.attention_out], feed_dict)
@@ -110,9 +122,9 @@ class query_weight:
         weightrank = self.rank_weight(sen2terms, weight_attn, weight_idf, weight_lm)
         weight_rank = normalization(weightrank)
         weight = self.merge_weight([(weight_rank, 0.7), (weight_rule, 0.0)])        # 0.6-0.4
-        wl = {'weight_rank':' '.join([str(k)+':'+str(v) for k, v in weight_rank]),'weight_rule':' '.join([str(k)+':'+str(v) for k, v in weight_rule]), \
+        self.logs['weight_results'] = {'weight_rank':' '.join([str(k)+':'+str(v) for k, v in weight_rank]),'weight_rule':' '.join([str(k)+':'+str(v) for k, v in weight_rule]), \
               'weight': ' '.join([str(k) + ':' + str(v) for k, v in weight])}
-        logging.info(json.dumps(wl, ensure_ascii=False))
+        #logging.info(json.dumps(wl, ensure_ascii=False))
         return weight
 
     def rank_weight(self, sen2terms, weight_attn, weight_idf, weight_lm):
@@ -177,7 +189,7 @@ def post_process(token_weights):
         if token.isdigit() and len(token) == 1: weight = weight * 0.2       # 单个数字降权处理
         if token in PLACE_NAMES: weight *= 0.3              # 地名降权
         if token in ['男','女','windows','linux','工程师','开发','程序','计算机','资深','国际','师','电话','前端',
-                     '硕士','员','本科','助理','经理','游戏']: weight *= 0.3
+                     '硕士','员','本科','助理','经理','游戏','算法','招聘']: weight *= 0.3
         if token in FUNC_DICT or token in INDUS_DICT or token in SPECIAL_WORDS_CUSTOM: weight *= 1.3     # 实体词升权
         results.append((token, weight))
     return results
@@ -209,7 +221,7 @@ def test(path):
 
 if __name__ == "__main__":
     try: query = sys.argv[1]
-    except: query = "java开发"
+    except: query = "自然语言处理算法工程师招聘" #"自然语言处理算法工程师招聘"
     req_dict = {"header": {}, "request": {"c": "", "m": "query_correct", "p": {"query": query}}}
     #test("get_jdcv_data/query.true")      # "corpus/sort_search_data" "get_jdcv_data/query.freq.csv" "get_jdcv_data/query.true"
     qw = query_weight()
