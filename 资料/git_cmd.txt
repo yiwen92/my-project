@@ -1,0 +1,90 @@
+2z6bym2@DESKTOP-11DHJSJ MINGW64 /d/edps
+$ git init
+Initialized empty Git repository in D:/edps/.git/
+
+2z6bym2@DESKTOP-11DHJSJ MINGW64 /d/edps (master)
+$ git config user.name ning.zou
+
+2z6bym2@DESKTOP-11DHJSJ MINGW64 /d/edps (master)
+$ git config user.email ning.zou@ifchange.com
+
+2z6bym2@DESKTOP-11DHJSJ MINGW64 /d/edps (master)
+$ git remote add origin https://gitlab.ifchange.com/algo/edps.git
+
+2z6bym2@DESKTOP-11DHJSJ MINGW64 /d/edps (master)
+$ git fetch origin
+Username for 'https://gitlab.ifchange.com': zouning1	（12345678）
+remote: Enumerating objects: 8695, done.
+remote: Counting objects: 100% (8695/8695), done.
+remote: Compressing objects: 100% (2939/2939), done.
+remote: Total 8695 (delta 4294), reused 8588 (delta 4220)
+Receiving objects: 100% (8695/8695), 2.98 MiB | 12.20 MiB/s, done.
+Resolving deltas: 100% (4294/4294), done.
+From https://gitlab.ifchange.com/algo/edps
+ * [new branch]      dev                  -> origin/dev
+ * [new branch]      dev_20200107         -> origin/dev_20200107
+ * [new branch]      dev_del_index        -> origin/dev_del_index
+ * [new branch]      dev_delete_antiquery -> origin/dev_delete_antiquery
+ * [new branch]      feature-sunyucheng   -> origin/feature-sunyucheng
+ * [new branch]      feature_wxm          -> origin/feature_wxm
+ * [new branch]      feature_xuming       -> origin/feature_xuming
+ * [new branch]      feature_zhangwu      -> origin/feature_zhangwu
+ * [new branch]      fix_efficency        -> origin/fix_efficency
+ * [new branch]      master               -> origin/master
+ * [new branch]      shenyong             -> origin/shenyong
+ * [new tag]         v20190917            -> v20190917
+ * [new tag]         v20190919            -> v20190919
+ * [new tag]         v20191114            -> v20191114
+ * [new tag]         v20191119            -> v20191119
+ * [new tag]         v20191203            -> v20191203
+ * [new tag]         v20191204            -> v20191204
+ * [new tag]         v20191227            -> v20191227
+
+2z6bym2@DESKTOP-11DHJSJ MINGW64 /d/edps (master)
+$ git checkout -b feature_zouning origin/dev
+Switched to a new branch 'feature_zouning'
+Branch 'feature_zouning' set up to track remote branch 'dev' from 'origin'.
+
+2z6bym2@DESKTOP-11DHJSJ MINGW64 /d/edps (feature_zouning)
+$ ls
+build.gradle  doc/  gradle/  gradlew*  gradlew.bat  lombok.config  README.md  resource/  script/  settings.gradle  src/
+
+
+**********************************************************************************************************************
+
+git add src/main/java/com/echeng/dps/tools/gmclient/HelloWorld.java
+git commit -m "更新文件"
+git push origin feature_zouning
+
+git remote -v		# 查看远程仓库
+git fetch origin master:temp		# 从远程的origin仓库的master分支下载到本地master并新建一个temp分支
+
+**********************************************************************************************************************
+[kdd_zouning@kdd52 batch]$ scp -r devread@192.168.8.196:/opt/userhome/icsearch/service/edps_v3/batch .		(123456)
+script/start_search.sh: JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote.port=16776 ...
+resource/gm.conf: "edps_zouning":{"host":["192.168.8.52:4730"]}
+environment: ...
+
+git init
+git remote add origin https://gitlab.ifchange.com/algo/edps.git
+git fetch origin
+git checkout origin/feature_zouning		(git checkout origin/dev)
+ssh devread@192.168.8.56
+./gradlew clean fatJar
+sh script/start_search.sh
+tail -f log/search.log  log/search0.log
+curl "192.168.8.52:6690/?handle=search&m=resume&count=20&keyword=java开发"
+
+rm -rf build.gradle doc gradle gradlew gradlew.bat lombok.config README.md resource script settings.gradle src .git .gitignore
+git init
+git config user.name ning.zou
+git config user.email ning.zou@ifchange.com
+git remote add origin https://gitlab.ifchange.com/algo/edps.git
+git fetch origin
+git checkout -b feature_zouning origin/dev
+resource/constant.properties	resource/gm.conf	script/start_search.sh	environment
+
+# git 撤销add或commit操作
+git log		（获取要恢复的版本号）	（使用 "git reset HEAD <文件>..." 以取消暂存）
+git reset –-soft <版本号>		（–-soft只是改变了HEAD的指向，本地代码不会变化。–-hard直接回改变本地源码，不仅仅指向变化了，代码也回到了那个版本时的代码）
+git push origin 分支名 –-force		（强制提交当前版本号）
