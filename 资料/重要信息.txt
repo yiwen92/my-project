@@ -1,0 +1,173 @@
+用户名： zouning
+权限： 普通用户
+web登录密码： mUQ6DuOi1jJQGKFb
+ssh密钥文件密码： LL7jPS4GAk6BVPRQ
+密钥下载地址： http://192.168.1.249:8000/juser/key/down/?uuid=526f32b516a942c2bc037bdf9eb6796d
+说明： 请登陆跳板机后台下载密钥, 然后使用密钥登陆跳板机！
+
+ssh密钥已生成，密码为 P0Eev91YIewv81WG
+
+192.168.1.111	iczouning	123456
+
+
+52 : ssh kdd_tangrongkuan@192.168.8.202
+scp a.txt kdd_zouning@127.0.0.1:~
+
+cv_resign java代码路径：svn://116.247.109.58/rd/se_analysis/trunk/ECheng_DPS_v2/trunk  (ning.zou   zouning20180529)
+
+/opt/app/mysql/bin/mysql -h192.168.8.51 -ukdd -pkd12934d -P3306	    (简历推荐数据)
+/opt/app/mysql/bin/mysql -h192.168.8.141 -ukdd -pkd12934d -P3307    (主投简历数据,companyresume.automaticdelivery)
+获取JD信息：python python_api.py -m jd JDID
+SELECT toh_resume_id,progress FROM hunter_order INTO OUTFILE '/opt/userhome/kdd_zouning/db_file' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED  BY '\n';
+select count(1) from data_table;
+
+/opt/app/mysql/bin/mysql -h192.168.7.82 -uopdev -pBd8jSwxtwTGqtiLo -P3307
+/opt/app/mysql/bin/mysql -h192.168.1.201 -udevuser -pdevuser -P3310
+use toh_intervention_admin
+select * from position_similar limit 10
+
+
+数据库名：algo_recommend
+表名	：*recommend_resume
+
+1、显示当前数据库服务器中的数据库列表：SHOW DATABASES;
+
+2、使用某个库：USE algo_recommend;
+
+3、列出库中所有的表：SHOW TABLES;
+
+4、显示数据表的结构：DESCRIBE *recommend_resume;	(00-80)_recommend_resume
+
+5、显示表中的记录：SELECT * FROM *recommend_resume;
+
+6、显示use的数据库名：SELECT DATABASE();
+
+7、显示当前的user：SELECT USER();
+
+8、统计表的行数：select count(*) from *recommend_resume;
+
+9、选择特定名字的表名
+SELECT distinct TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME LIKE '%recommend_resume%';
+
+10、显示表的前几行：select * from 00_recommend_resume limit 5;
+
+设置数据库的字符编码：set names utf8;
+
+
+svn co svn://116.247.109.58/rd/datamine/algorithm_sevices/inten_predict
+svn mkdir script
+cp inten_pridict_server/script/*.py script/
+svn ci -m "上传代码的注释"
+cd models/	svn add *		svn ci -m "上传代码"
+svn co  -->  svn mkdir  -->  svn add *  -->  svn ci -m "上传代码注释"
+
+svn co svn://116.247.109.58/rd/datamine/algorithm_sevices/cv_resign
+svn co svn://116.247.109.58/rd/datamine/algorithm_sevices/inten_predict
+svn co svn://116.247.109.58/rd/se_analysis/trunk/ECheng_DPS_v2/trunk
+svn co svn://116.247.109.58/rd/datamine/algorithm_sevices/cv_resign_http
+svn co svn://116.247.109.58/rd/search/Echeng-recommendation-lib
+svn co svn://116.247.109.58/rd/datamine/algorithm_sevices/resign_prophet_http
+svn co svn://116.247.109.58/rd/se_analysis/trunk/ECheng_DPS_v2/trunk/
+svn co svn://116.247.109.58/rd/datamine/algorithm_sevices/consult_recommend_http
+svn co svn://192.168.1.205/rd/datamine/algorithm_sevices/consult_recommend_http  (开发环境)
+svn://192.168.1.203/rd/se_analysis/trunk/ECheng_DPS_v2/trunk/	(windows edps check out)
+svn co svn://116.247.109.58/rd/datamine/algorithm_sevices/dsxapp_recommend_http
+svn co svn://116.247.109.58/rd/se_analysis/personal/yaocheng/python_project
+
+cd inten_predict	-->cp	svn add * --depth infinity --force	-->	svn ci -m '修改版本'
+find . -name ".svn" | xargs rm -rf
+curl http://127.0.0.1:51652/intention_predict/health_check
+
+svn 账号密码：ning.zou = zouning20180529
+
+conda create -n python36 python=3.6.2
+source activate python36	source deactivate
+conda activate python36	conda deactivate
+
+/opt/app/gearmand/bin/gearadmin -h10.9.10.8 --status | grep cv_resign
+
+wiki：http://192.168.1.150:8090/pages/viewpage.action?pageId=5083473
+
+秘钥登录不同机器：
+ll .ssh/	-->  ssh-keygen -t rsa  -->  cat .ssh/  -->  cat .ssh/id_rsa.pub     &&     vim .ssh/  -->  vim .ssh/authorized_keys  (copy)
+
+rm -rf `find . -name ".svn" | xargs`
+cat label_data | awk  '{if ($1==0) {print $0} else{count++;if(count<162) {print $0}}}' > cut_label_data
+
+http://192.168.1.150:8090/pages/viewpage.action?pageId=5081768
+http://192.168.1.150:8090/pages/viewpage.action?pageId=10682806
+
+
+
+EDPS :
+http://192.168.1.150:8090/pages/viewpage.action?pageId=10682394
+ssh devread@192.168.8.54
+cd /opt/userhome/icsearch/service/edps_v2
+scp * kdd_zouning@192.168.8.52:/opt/userhome/kdd_zouning/edps/local/
+scp -r batch/ dict/ lib/ resource/ src/ script/ third/ kdd_zouning@192.168.8.52:/opt/userhome/kdd_zouning/edps/local/
+scp -r 192.168.8.54://opt/userhome/icsearch/service/edps_v2/batch/* batch
+
+ESLog.getInstance().info(this.getClass(), "[come in!]");
+curl 'http://192.168.8.52:9999/?handle=recommendation&m=jd&jd_id=45875137&cv_id=127073976'
+curl 'http://192.168.8.52:9999/?handle=recommendation&m=jdcv_matchscore&jd_id=45875137&cv_id=127073976'
+curl 'http://192.168.8.52:9999/?handle=recommendation&m=simjd&jd_id=45533232'
+curl 'http://192.168.8.52:9999/?handle=recommendation&m=campus&cv_id=189988&tob_user_id=1226'
+
+pdf : jqxx -> p251-17.1
+        sdxx -> p653-3.8 (done)
+
+/opt/userhome/kdd_zouning/edps/local/src/com/echeng/dps/recommendation/featurecandidates/query/querygenerator/cvjd
+
+netstat -nlo | grep 51702
+curl -X POST -d '{"header": {"log_id": "dfdfdf"}, "request": {"c":"", "m":"","p":{"handle":"recommendation","m":"simjd","jd_id":"58364438"}}}'  http://192.168.8.52:51702/esrecommend
+curl -H "Content-Type:application/json" -X POST --data '{"header":{"provider":"zhaofutao"},"request":{"c":"","m":"","p":{"handle":"recommendation","m":"simjd","jd_id":"55453078","rec_type":"full"}}}' http://search.offline.rpc/esrecommend
+
+scp kdd_zouning@192.168.8.52:~/edps/local/stop_search.sh .
+
+http://211.148.28.36:48090/dashboard/  src->rbt setup-repo, com->svn st->rbt post->URL  (rbt post -r 2317)	
+
+svn ci -m "代码更新的注释
+review:2317
+"
+
+test-tag账号：algotest，密码：123456
+
+http://test-tag.ifchange.com/?c=jd2cvList&jd=53235454
+
+docker：账号：ning.zou   密码：Zouning@2019
+docker pull tensorflow/tensorflow:1.12.0-py
+docker run -ti --name tf-test -v /opt/userhome/kdd_zouning/test_docker/:/code/test_docker tensorflow/tensorflow:1.12.0 bash
+docker exec -ti tf-test bash
+
+
+
+curl -X POST -d '@./query' http://10.9.10.7:9200/dashixiong_news/news/_search
+
+awk -F"=" '{print $4}'
+
+docker 账号：ning.zou    密码: yFo6CpD04NzOkqk5
+docker login hub.ifchange.com -u ning.zou -p yFo6CpD04NzOkqk5
+
+docker run -ti --name dsxrec ic/dsxrecommendhttp:v0.1 bash
+docker run -d --name dsxrec -v /opt/userhome/algo/dsxreclog:/server/log -p 51685:51685 ic/dsxrecommendhttp:v0.1
+# 上传docker镜像
+docker tag ic/dsxrecommendhttp:v0.1 hub.ifchange.com/ic/dsxrecommendhttp:v0.1
+docker push hub.ifchange.com/ic/dsxrecommendhttp:v0.1
+
+
+/opt/app/mysql/bin/mysql -h192.168.8.101 -N -ualgo -p'NIH2q64qDjMgOyaf' -P3307
+
+
+git init
+git config user.name ning.zou	
+git config user.email ning.zou@ifchange.com
+git remote add origin https://gitlab.ifchange.com/algo/edps.git
+git fetch origin
+git checkout -b feature_zouning origin/dev
+
+
+http://test-tag.ifchange.com/?c=cvList&task_id=2979
+
+/opt/userhome/icsearch/service/edps_v3/log
+
+grep -w cost query_correct.log.2020-04-01 | awk -F'=' ' {if($3>"0.1") print $0"\n"}'
