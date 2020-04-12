@@ -13,7 +13,7 @@ class RNNConfig(object):
     attention_size = 32         # attention 维度
     hidden_dim = 128        # 隐藏层神经元
     rnn = 'lstm'            # lstm 或 gru
-    keep_prob = 0.8         # dropout保留比例
+    dropout = 0.8         # dropout保留比例
 
 # Create the rnn neural network object
 class RNN(object):
@@ -42,11 +42,12 @@ def rnn_net(input_x, is_training=True, scope='RnnNet', config=RNNConfig()):
         # 使用dynamic_rnn构建LSTM模型，将输入编码成隐层向量。
         # encoder_outputs用于attention，batch_size*encoder_inputs_length*rnn_size
         encoder_outputs, encoder_state = tf.nn.dynamic_rnn(cell=rnn_cell, inputs=embedding_inputs, dtype=tf.float32, sequence_length=lengths)
+        encoder_outputs = tf.layers.dropout(encoder_outputs, config.dropout, training=is_training)
         last = attention(encoder_outputs, lengths, config.attention_size)        # Attention mechanism
         #last = encoder_outputs[:, -1, :]                            # 取最后一个时序输出作为结果
 
         fc = tf.layers.dense(last, config.hidden_dim, name='fc1')
-        fc = tf.contrib.layers.dropout(fc, config.keep_prob)
+        fc = tf.layers.dropout(fc, config.dropout, training=is_training)
         fc = tf.nn.relu(fc)
 
         # 分类器
@@ -63,7 +64,7 @@ def create_rnn_cell(config):
         else:
             single_cell = tf.nn.rnn_cell.GRUCell(config.rnn_size)
         #添加dropout
-        cell = tf.nn.rnn_cell.DropoutWrapper(single_cell, output_keep_prob=config.keep_prob)
+        cell = tf.nn.rnn_cell.DropoutWrapper(single_cell)
         return cell
     #列表中每个元素都是调用single_rnn_cell函数
     rnn_cell = tf.nn.rnn_cell.MultiRNNCell([single_rnn_cell() for _ in range(config.rnn_num_layers)])

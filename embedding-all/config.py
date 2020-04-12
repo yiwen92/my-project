@@ -14,7 +14,9 @@ SEQ_LEN = 3             # 序列长度
 
 class Config:
     def __init__(self):
-        self.num_epochs = 100  # 总迭代轮次
+        self.learning_rate = 0.01   # 学习率
+        self.num_steps = 10 # estimator 迭代次数
+        self.num_epochs = 5  # 总迭代轮次
         self.batch_size = 12  # 每批训练大小
         self.train_valid_ratio = 0.9    # 训练集和测试集的比例
         self.over_write_vocab = False   # 是否重写vocab文件

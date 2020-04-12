@@ -1,6 +1,4 @@
-import re, json, math, os, logging, codecs, jieba
-from collections import defaultdict
-from tqdm import tqdm
+import re, os, logging, codecs
 from config import conf
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -68,46 +66,6 @@ def load_word_freq_dict(path, th=0):      # 加载词典
 FUNC_DICT = load_word_freq_dict(conf.func_file)
 INDUS_DICT = load_word_freq_dict(conf.indus_file)
 
-def term_type(word_index, sen2terms):
-    """
-    0-中文: 前端开发，1-英文：web，2-数字：2000，3-符号：k，4-停用词：的，5-其它：app123
-    """
-    type_encode = [0] * 6
-    ty_dict = {'ch': 0, 'en': 1, 'digit': 2, 'punct': 3, 'stopword': 4, 'other': 5}
-    def is_ch(w):
-        if re_ch.findall(w): return True
-        return False
-    def is_digit(w):
-        if w.isdigit(): return True
-        return False
-    def is_en(w):
-        if w.isalpha(): return True
-        return False
-    if word_index < 0 or word_index >= len(sen2terms):
-        type_encode[ty_dict['other']] = 1
-        return type_encode
-    term = sen2terms[word_index]
-    if is_ch(term): type_encode[ty_dict['ch']] = 1
-    elif is_en(term): type_encode[ty_dict['en']] = 1
-    elif is_digit(term): type_encode[ty_dict['digit']] = 1
-    elif term in PUNCTUATION_LIST: type_encode[ty_dict['punct']] = 1
-    elif term in STOP_WORDS: type_encode[ty_dict['stopword']] = 1
-    else: type_encode[ty_dict['other']] = 1
-    return type_encode
-
-def entity_type(word_index, sen2terms):
-    """ 0-行业词，1-职能词, 3-其它 """
-    entiey_encode = [0] * 3
-    ty_dict = {'indus': 0, 'func': 1, 'other': 2}
-    if word_index < 0 or word_index >= len(sen2terms):
-        entiey_encode[ty_dict['other']] = 1
-        return entiey_encode
-    term = sen2terms[word_index]
-    if term in INDUS_DICT: entiey_encode[ty_dict['indus']] = 1
-    elif term in FUNC_DICT: entiey_encode[ty_dict['func']] = 1
-    else: entiey_encode[ty_dict['other']] = 1
-    return entiey_encode
-
 def Q2B(uchar):     # 全角转半角
     inside_code = ord(uchar)
     if inside_code == 0x3000:
@@ -132,6 +90,15 @@ def clean_line(line):
 
 def cal_vec_sim(vec1, vec2):
     return cosine_similarity([vec1], [vec2])[0][0]
+
+def token2list(token):
+    data = []
+    if re_en.fullmatch(token):
+        data.append(token)
+    else:
+        for e in list(token):
+            data.append(e)
+    return data
 
 if __name__ == "__main__":
     a = clean_line("（一）【任职资格】：1、大专及以上学历")

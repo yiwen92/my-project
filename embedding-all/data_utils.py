@@ -1,10 +1,12 @@
 import random, json
 import numpy as np
 from tqdm import tqdm
-from utils import clean_line, re_en
+from utils import clean_line, re_en, token2list
 from collections import defaultdict
-from config import MAX_NUM_NEG, conf, VOCAB_SIZE
+from config import MAX_NUM_NEG, conf, VOCAB_SIZE, SEQ_LEN
 from seg_utils import Tokenizer
+
+word2id = json.load(open(conf.vocab, encoding="utf8"))
 
 class TrainData():
     def __init__(self):
@@ -76,6 +78,33 @@ def batch_iter(x, y, batch_size=64):
         start_id = i * batch_size
         end_id = min((i + 1) * batch_size, data_len)
         yield x_shuffle[start_id: end_id], y_shuffle[start_id: end_id]
+
+def seq2ids(text, max_length=SEQ_LEN):
+    """将文本转换为id表示"""
+    data = token2list(text)
+    data_id = [word2id.get(x, 0) for x in data]
+    if len(data_id) > max_length: x_pad = data_id[: max_length]
+    else: x_pad = data_id + [0] * (max_length - len(data_id))
+    return x_pad
+
+class train_sample():
+    def __init__(self, entity, pos_entity, neg_entitys):
+        self.entity = entity
+        self.pos_entity = pos_entity
+        self.neg_entitys = neg_entitys
+
+def gen_train_samples(file_path):
+    train_samples = json.load(open(file_path, encoding="utf8"))
+    samples = []
+    for k, (p, n) in train_samples.items():
+        kid = seq2ids(k)
+        pid = seq2ids(p)
+        nid = [seq2ids(e) for e in n]
+        ts = train_sample(kid, pid, nid)
+        samples.append(ts)
+    X = np.array([e.entity for e in samples])
+    Y = np.array([[e.pos_entity] + e.neg_entitys for e in samples])
+    return X, Y
 
 if __name__ == "__main__":
     td = TrainData()
