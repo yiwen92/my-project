@@ -8,15 +8,16 @@ def model_fn(features, labels, mode):
     # Build the neural network
     # Because Dropout have different behavior at training and prediction time, we
     # need to create 2 distinct computation graphs that still share the same weights.
+    is_training = (mode == tf.estimator.ModeKeys.TRAIN)
     # get semantic vector of input
-    emb_a = create_embed_encoder(features['a_in'], is_training=True)
-    emb_b = create_embed_encoder(features['b_in'], is_training=True, is_normal=False)
+    emb_a = create_embed_encoder(features['a_in'], is_training=is_training)
+    emb_b = create_embed_encoder(features['b_in'], is_training=is_training, is_normal=False)
     # Define loss and optimizer
     sim_op, sim_emb = tf_sim(emb_a, emb_b)
     loss_op = tf_loss(sim_op, sim_emb)
     train_op = tf.train.AdamOptimizer(learning_rate=conf.learning_rate).minimize(loss_op, global_step=tf.train.get_global_step())
     # TF Estimators requires to return a EstimatorSpec, that specify
-    # the different ops for training, evaluating, ...
+    # the different ops for training, evaluating, predicting...
     # If prediction mode, early return
     if mode == tf.estimator.ModeKeys.PREDICT:
         return tf.estimator.EstimatorSpec(mode, predictions={'sim_op': sim_op})  # pred_classes})
