@@ -1,10 +1,11 @@
-from config import conf, SEQ_LEN
+from config import conf, SEQ_LEN, FLAGS
 import tensorflow as tf
 from embedding import create_embed_encoder, tf_sim, tf_loss
 from data_utils import gen_train_samples
+import model_utils
 
 # Define the model function (following TF Estimator Template)
-def model_fn(features, labels, mode):
+def model_fn(features, labels, mode, params):
     # Build the neural network
     # Because Dropout have different behavior at training and prediction time, we
     # need to create 2 distinct computation graphs that still share the same weights.
@@ -29,9 +30,14 @@ def model_fn(features, labels, mode):
     return estim_specs
 
 def run():
+    # 设置日志的打印级别：把日志设置为INFO级别
+    tf.logging.set_verbosity(tf.logging.INFO)
+    # 得到训练数据
     x_train, y_train = gen_train_samples(conf.train_samples)
+    # 运行参数配置
+    run_config = model_utils.configure_tpu(FLAGS)
     # Build the Estimator
-    model = tf.estimator.Estimator(model_fn)
+    model = tf.estimator.Estimator(model_fn, params={"seq_len": SEQ_LEN}, config=run_config)
     # Define the input function for training
     input_fn = tf.estimator.inputs.numpy_input_fn(
         x={'a_in': x_train, 'b_in': y_train}, y=y_train,
@@ -43,7 +49,6 @@ def run():
                     'b_in': tf.placeholder(dtype=tf.int32, shape=[None, None, SEQ_LEN], name='entity_list')}
     serving_input_receiver_fn = tf.estimator.export.build_raw_serving_input_receiver_fn(feature_spec)
     model.export_savedmodel(conf.models_path + 'estimator', serving_input_receiver_fn)
-
 
 
 if __name__ == "__main__":
