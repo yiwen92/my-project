@@ -2,6 +2,7 @@ import re, json, math, os, logging, codecs, jieba
 from collections import defaultdict
 from tqdm import tqdm
 from config import conf
+from sklearn.metrics.pairwise import cosine_similarity
 
 re_ch = re.compile(u"([\u4e00-\u9fa5])",re.S)
 re_en = re.compile(u"([a-zA-Z]+|[0-9]+k[\+]*)",re.S)
@@ -128,6 +129,9 @@ def clean_line(line):
     line = re.sub("[&$￥～�|＠？＞＝＜；!｜｛＼］［／－＋＊*＆％＃＂！🌐．﹒海金]{1,}|[.#-]{2,}|[+]{3,}|[0-9]*%", "", line)
     line = re.sub("[【】]{1,}", "", line)
     return line
+
+def cal_vec_sim(vec1, vec2):
+    return cosine_similarity([vec1], [vec2])[0][0]
 
 if __name__ == "__main__":
     a = clean_line("（一）【任职资格】：1、大专及以上学历")

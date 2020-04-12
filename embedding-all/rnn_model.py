@@ -3,31 +3,47 @@
 
 import tensorflow as tf
 from config import VOCAB_SIZE, EMBEDDING_DIM, SEMANTIC_DIM
+from attention_mechanism import attention
 
-class TRNNConfig(object):
+class RNNConfig(object):
     """RNN配置参数"""
     # 模型参数
-    num_layers= 2           # 隐藏层层数
+    rnn_num_layers= 2           # rnn 层数
+    rnn_size = 64            # rnn 编码维度
+    attention_size = 32         # attention 维度
     hidden_dim = 128        # 隐藏层神经元
     rnn = 'lstm'            # lstm 或 gru
     keep_prob = 0.8         # dropout保留比例
 
-config=TRNNConfig()
+# Create the rnn neural network object
+class RNN(object):
+    pass
 
-# Create the rnn neural network
-def rnn_net(input_x, is_training):
+def rnn_net(input_x, is_training=True, scope='RnnNet', config=RNNConfig()):
+    """
+    :param input_x: int32 Tensor in shape [bsz, len], the input token IDs.
+    :param is_training:
+    :param scope:
+    :param config:
+    :return:
+    """
     # Define a scope for reusing the variables
-    with tf.variable_scope('RnnNet', reuse=tf.AUTO_REUSE):
+    with tf.variable_scope(scope, reuse=tf.AUTO_REUSE):
+        used = tf.sign(tf.abs(input_x))
+        length = tf.reduce_sum(used, reduction_indices=1)
+        lengths = tf.cast(length, tf.int32)
         embedding = tf.get_variable('embedding', [VOCAB_SIZE, EMBEDDING_DIM])
         # TF Estimator input is a dict, in case of multiple inputs
         embedding_inputs = tf.nn.embedding_lookup(embedding, input_x)
 
         # 多层rnn网络
-        cells = [dropout() for _ in range(config.num_layers)]
-        rnn_cell = tf.contrib.rnn.MultiRNNCell(cells, state_is_tuple=True)
+        rnn_cell = create_rnn_cell(config)
 
-        _outputs, _ = tf.nn.dynamic_rnn(cell=rnn_cell, inputs=embedding_inputs, dtype=tf.float32)
-        last = _outputs[:, -1, :]  # 取最后一个时序输出作为结果
+        # 使用dynamic_rnn构建LSTM模型，将输入编码成隐层向量。
+        # encoder_outputs用于attention，batch_size*encoder_inputs_length*rnn_size
+        encoder_outputs, encoder_state = tf.nn.dynamic_rnn(cell=rnn_cell, inputs=embedding_inputs, dtype=tf.float32, sequence_length=lengths)
+        last = attention(encoder_outputs, lengths, config.attention_size)        # Attention mechanism
+        #last = encoder_outputs[:, -1, :]                            # 取最后一个时序输出作为结果
 
         fc = tf.layers.dense(last, config.hidden_dim, name='fc1')
         fc = tf.contrib.layers.dropout(fc, config.keep_prob)
@@ -38,15 +54,19 @@ def rnn_net(input_x, is_training):
 
     return logits
 
-def lstm_cell():  # lstm核
-    return tf.contrib.rnn.BasicLSTMCell(config.hidden_dim, state_is_tuple=True)
+def create_rnn_cell(config):
+    def single_rnn_cell():
+        # 创建单个cell，这里需要注意的是一定要使用一个single_rnn_cell的函数，不然直接把cell放在MultiRNNCell
+        # 的列表中最终模型会发生错误
+        if config.rnn == 'lstm':
+            single_cell = tf.nn.rnn_cell.LSTMCell(config.rnn_size)
+        else:
+            single_cell = tf.nn.rnn_cell.GRUCell(config.rnn_size)
+        #添加dropout
+        cell = tf.nn.rnn_cell.DropoutWrapper(single_cell, output_keep_prob=config.keep_prob)
+        return cell
+    #列表中每个元素都是调用single_rnn_cell函数
+    rnn_cell = tf.nn.rnn_cell.MultiRNNCell([single_rnn_cell() for _ in range(config.rnn_num_layers)])
+    return rnn_cell
 
-def gru_cell():  # gru核
-    return tf.contrib.rnn.GRUCell(config.hidden_dim)
 
-def dropout():  # 为每一个rnn核后面加一个dropout层
-    if (config.rnn == 'lstm'):
-        cell = lstm_cell()
-    else:
-        cell = gru_cell()
-    return tf.contrib.rnn.DropoutWrapper(cell, output_keep_prob=config.keep_prob)
