@@ -29,6 +29,9 @@ def rnn_net(input_x, is_training=True, scope='RnnNet', config=RNNConfig()):
     :return:
     """
     debug_info = {}
+    tf_float = tf.float32
+    bsz = tf.shape(input_x)[0]
+    qlen = tf.shape(input_x)[1]
     # Define a scope for reusing the variables
     with tf.variable_scope(scope, reuse=tf.AUTO_REUSE):
         used = tf.sign(tf.abs(input_x))
@@ -68,6 +71,18 @@ def rnn_net(input_x, is_training=True, scope='RnnNet', config=RNNConfig()):
 
             # For each of the timestamps its vector of size A from `v` is reduced with `u` vector
             vu = tf.tensordot(v, u_omega, axes=1, name='vu')  # (B,T) shape
+
+            # attention mask
+            def cond(i, _length, _output):
+                return tf.less(i, tf.shape(_length)[0])
+            def body(i, _length, _output):
+                return [i + 1, _length, _output.write(i, tf.concat([tf.zeros([_length[i]], dtype=tf_float), tf.ones(qlen-_length[i])], axis=-1))]
+            Out = tf.TensorArray(size=0, dtype=tf.float32, dynamic_size=True, clear_after_read=False)
+            res = tf.while_loop(cond, body, [0, lengths, Out])
+            attn_mask = tf.convert_to_tensor(res[-1].stack())
+            vu = vu - 1e30 * attn_mask
+            debug_info['vu'] = vu; debug_info['res'] = res[-1].stack(); debug_info['attn_mask'] = attn_mask
+
             alphas = tf.nn.softmax(vu, name='alphas')  # (B,T) shape
 
             # Output of (Bi-)RNN is reduced with attention vector; the result has (B,D) shape
