@@ -7,7 +7,7 @@ re_en = re.compile(u"([a-zA-Z]+|[0-9]+k[\+]*)",re.S)
 re_year = re.compile(u'([0-9]*年)', re.M | re.I)
 PUNCTUATION_LIST = ".。,，,、?？:：;；{}[]【】“‘’”《》/!！%……（）<>@#$~^￥%&*\"\'=+-_——「」"
 NONE_STOPWORD = []
-CUSTOM_STOPWORD = ["人","年","大","工作","能力","负责","负责","生产"]
+CUSTOM_STOPWORD = ["人","年","大","工作","能力","负责","生产"]
 STOP_WORDS = [e.strip() for e in open(conf.stop_words, encoding="utf8").readlines() if e.strip() not in NONE_STOPWORD] + CUSTOM_STOPWORD
 
 def load_place(path):

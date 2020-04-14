@@ -46,8 +46,8 @@ class Encoder:
                          ):
         # type: (...) -> Tuple[tf.Tensor, tf.Tensor]
         """Create tf graph for training"""
-        self.emb_b = create_embed_encoder(b_in, is_training, False)
-        self.emb_a = create_embed_encoder(a_in, is_training)
+        self.emb_b, self.debug_info_b = create_embed_encoder(b_in, is_training, False)
+        self.emb_a, self.debug_info_a = create_embed_encoder(a_in, is_training)
         #emb_a = _create_tf_embed_nn(a_in, is_training, [10], name='a')
         #emb_b = _create_tf_embed_nn(b_in, is_training, [10], name='b')
         self.sim_ab = cal_sim(self.emb_a, self.emb_b)
@@ -55,23 +55,22 @@ class Encoder:
 
 def create_embed_encoder(x_in, is_training, is_normal=True):
     if is_normal:
-        embedding = rnn_net(x_in, is_training)
+        embedding, debug_info = rnn_net(x_in, is_training)
     else:
         x_size = tf.shape(x_in)
         x_in_dim = x_in.get_shape().as_list()[2]
-        #a=rnn_net(x_in[:,0,:])
         x_in_reshape = tf.reshape(x_in, [-1, x_in_dim])
-        x_embedding = rnn_net(x_in_reshape, is_training)
+        x_embedding, debug_info = rnn_net(x_in_reshape, is_training)
         x_embedding_dim = x_embedding.get_shape().as_list()[1]
         embedding = tf.reshape(x_embedding, [-1, x_size[1], x_embedding_dim])
         '''
-        tmp = []
+        tmp = []; debug_info['emb_diff_'] = []
         for i in range(x_in.get_shape().as_list()[1]):
-            single_embedding = rnn_net(x_in[:, i, :], is_training)   ;self.debug_rnn.append((x_in[:,i,:], single_embedding))
+            single_embedding, _ = rnn_net(x_in[:, i, :], is_training)   ;debug_info['emb_diff_'].append((x_in[:,i,:], single_embedding))
             tmp.append(single_embedding)
-        embedding = tf.stack(tmp, 1)
+        embedding1 = tf.stack(tmp, 1)   ; debug_info['embedding'] = embedding; debug_info['embedding1'] = embedding1
         '''
-    return embedding
+    return embedding, debug_info
 
 def cal_sim(a, b):
     a = tf.nn.l2_normalize(a, -1)
