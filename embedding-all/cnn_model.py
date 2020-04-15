@@ -1,7 +1,45 @@
 # coding: utf-8
 
 import tensorflow as tf
+from config import VOCAB_SIZE, EMBEDDING_DIM, SEMANTIC_DIM
 
+class CNNConfig(object):
+    num_filters = 256  # 卷积核数目
+    kernel_size = 5  # 卷积核尺寸
+    hidden_dim = 128  # 全连接层神经元
+    dropout = 0.8  # dropout保留比例
+
+def cnn_net(input_x, is_training=True, scope='CnnNet', config=CNNConfig()):
+    """
+    :param input_x: int32 Tensor in shape [batch_size, seq_len], the input token IDs.
+    :param is_training:
+    :param scope:
+    :param config:
+    :return: float32 Tensor in shape [batch_size, semantic_dim]
+    """
+    debug_info = {}
+    tf_float = tf.float32
+    bsz = tf.shape(input_x)[0]
+    qlen = tf.shape(input_x)[1]
+    # Define a scope for reusing the variables
+    with tf.variable_scope(scope, reuse=tf.AUTO_REUSE):
+        used = tf.sign(tf.abs(input_x))
+        length = tf.reduce_sum(used, reduction_indices=1)
+        lengths = tf.cast(length, tf.int32)
+        embedding = tf.get_variable('embedding', [VOCAB_SIZE, EMBEDDING_DIM])
+        embedding_inputs = tf.nn.embedding_lookup(embedding, input_x)
+        # CNN layer
+        conv = tf.layers.conv1d(embedding_inputs, config.num_filters, (2), name='conv')
+        # global max pooling layer
+        gmp = tf.reduce_max(conv, reduction_indices=[1], name='gmp')
+        # 全连接层，后面接dropout以及relu激活
+        fc = tf.layers.dense(gmp, config.hidden_dim, name='fc1')
+        fc = tf.contrib.layers.dropout(fc, config.dropout)
+        fc = tf.nn.relu(fc)
+
+        # 分类器
+        logits = tf.layers.dense(fc, SEMANTIC_DIM, name='fc2')
+    return logits, debug_info
 
 class TCNNConfig(object):
     """CNN配置参数"""

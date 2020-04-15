@@ -10,15 +10,16 @@ pwd_path = os.path.abspath(os.path.dirname(__file__))
 
 MAX_NUM_NEG = 2         # 负采样数目
 VOCAB_SIZE = 10000       # 词汇表大小
-EMBEDDING_DIM = 5      # 词向量维度
-SEMANTIC_DIM = 3       # 语义向量大小
-SEQ_LEN = 5             # 序列长度
+EMBEDDING_DIM = 128      # 词向量维度
+SEMANTIC_DIM = 64       # 语义向量大小
+SEQ_LEN = 10             # 序列长度
 
 class Config:
     def __init__(self):
+        self.model_type = 'rnn'      # 语义编码网名类型: ['rnn', 'nn', 'cnn', 'attention']
         self.learning_rate = 0.001   # 学习率
-        self.num_steps = 100 # estimator 迭代次数
-        self.num_epochs = 5  # 总迭代轮次
+        self.num_steps = 10 # estimator 迭代次数
+        self.num_epochs = 1  # 总迭代轮次
         self.batch_size = 2  # 每批训练大小
         self.train_valid_ratio = 0.9    # 训练集和测试集的比例
         self.over_write_vocab = True   # 是否重写vocab文件
@@ -31,6 +32,11 @@ class Config:
         self.func_file = "dict/func.txt"
         self.indus_file = "dict/ind.txt"
         self.models_path = "models/"
+        self.similarity_type = 'cosine'
+        self.mu_pos = 0.8
+        self.mu_neg = -0.4
+        self.C_emb = 0.8
+        self.use_max_sim_neg = True
 
 conf = Config()
 

@@ -14,9 +14,13 @@ class TrainData():
         self.tokenizer = Tokenizer()
 
     def original2corp(self):
+        text =[]
         print("extract corpu from original file: %s --> corpus file: %s" % (FLAGS.original_file, FLAGS.corpus_file))
-        text = [e.strip().split("\t")[33].replace("\\n", "").lower() for e in open(FLAGS.original_file, encoding="utf8").readlines() \
-                if len(e.strip().split("\t")) >= 33]
+        for line in open(FLAGS.original_file, encoding="utf8").readlines():
+            try: e = line.strip().split("\t")[33].replace("\\n", "").lower()
+            except: continue
+            a=line.strip().split("\t")
+            text.append(e)
         with open(FLAGS.corpus_file, "w", encoding="utf8") as fin:
             fin.write("\n".join(text))
 

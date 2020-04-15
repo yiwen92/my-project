@@ -10,23 +10,19 @@ class RNNConfig(object):
     """RNN配置参数"""
     # 模型参数
     rnn_num_layers= 2           # rnn 层数
-    rnn_size = 3            # rnn 编码维度
-    attention_size = 4         # attention 维度
+    rnn_size = 128            # rnn 编码维度
+    attention_size = 64         # attention 维度
     hidden_dim = 128        # 隐藏层神经元
     rnn = 'lstm'            # lstm 或 gru
     dropout = 0.8         # dropout保留比例
 
-# Create the rnn neural network object
-class RNN(object):
-    pass
-
 def rnn_net(input_x, is_training=True, scope='RnnNet', config=RNNConfig()):
     """
-    :param input_x: int32 Tensor in shape [bsz, len], the input token IDs.
+    :param input_x: int32 Tensor in shape [batch_size, seq_len], the input token IDs.
     :param is_training:
     :param scope:
     :param config:
-    :return:
+    :return: float32 Tensor in shape [batch_size, semantic_dim]
     """
     debug_info = {}
     tf_float = tf.float32
@@ -47,9 +43,9 @@ def rnn_net(input_x, is_training=True, scope='RnnNet', config=RNNConfig()):
         # 使用dynamic_rnn构建LSTM模型，将输入编码成隐层向量。
         # encoder_outputs用于attention，batch_size*encoder_inputs_length*rnn_size
         encoder_outputs, encoder_state = tf.nn.dynamic_rnn(cell=rnn_cell, inputs=embedding_inputs, dtype=tf.float32, sequence_length=lengths)
-        #encoder_outputs = tf.layers.dropout(encoder_outputs, config.dropout, training=is_training)
+        encoder_outputs = tf.layers.dropout(encoder_outputs, config.dropout, training=is_training)
         #last = attention(encoder_outputs, lengths, config.attention_size)        # Attention mechanism
-        # 取最后一个时序输出作为结果
+        # 对中间的时序结果进行 attention 处理得到最后的语义向量
         with tf.variable_scope("Attention", reuse=tf.AUTO_REUSE):
             inputs = encoder_outputs
             if isinstance(encoder_outputs, tuple):

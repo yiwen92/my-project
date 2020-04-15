@@ -41,7 +41,7 @@ def test():
 
     a = y_valid[:2, :, :]
     input_x = tf.reshape(a, [-1, SEQ_LEN])
-    lenghts = tf.cast(tf.reduce_sum(tf.sign(tf.abs(tf.reshape(a, [-1, SEQ_LEN]))), reduction_indices=1), tf.int32)
+    lengths = tf.cast(tf.reduce_sum(tf.sign(tf.abs(tf.reshape(a, [-1, SEQ_LEN]))), reduction_indices=1), tf.int32)
     embedding = tf.get_variable('embedding', [VOCAB_SIZE, EMBEDDING_DIM])
     embedding_inputs = tf.nn.embedding_lookup(embedding, input_x)
 
@@ -51,10 +51,10 @@ def test():
         return [i+1, _length, _input, _output.write(i, _input[:, _length[i], :])]
     Out = tf.TensorArray(size=0, dtype=tf.float32, dynamic_size=True)
     Input = tf.placeholder(tf.float32, [None, None, None], name='input_tensor')
-    res = tf.while_loop(cond, body, [0, lenghts, embedding_inputs, Out])
+    res = tf.while_loop(cond, body, [0, lengths, embedding_inputs, Out])
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        fetch = sess.run({'res': res[-1].stack(), 'lenghts': lenghts})
+        fetch = sess.run({'res': res[-1].stack(), 'lenghts': lengths})
         pass
     pass;tf.w
 

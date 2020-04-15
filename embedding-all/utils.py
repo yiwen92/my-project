@@ -1,4 +1,4 @@
-import re, os, logging, codecs
+import re, os, logging, codecs, math
 from config import conf
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -99,6 +99,10 @@ def token2list(token):
         for e in list(token):
             data.append(e)
     return data
+
+def sigmoid(value):
+    prob = 1.0 / (1 + math.exp(-1 * value))
+    return prob
 
 if __name__ == "__main__":
     a = clean_line("（一）【任职资格】：1、大专及以上学历")

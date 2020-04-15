@@ -1,66 +1,41 @@
 import tensorflow as tf
-from tensorflow.contrib.layers.python.layers import initializers
-from cnn_model import TCNNConfig, TextCNN
-from rnn_model import rnn_net
-from config import SEQ_LEN, MAX_NUM_NEG
+from config import conf
 
-C2 = 0.1
-droprate = 0.5
-embed_dim = 10
-similarity_type = 'cosine'
-mu_pos = 0.8
-use_max_sim_neg = True
-mu_neg = -0.4
-C_emb = 0.8
-
-def _create_tf_embed_nn(x_in, is_training, layer_sizes, name):
-    # type: (tf.Tensor, tf.Tensor, List[int], Text) -> tf.Tensor
-    """Create nn with hidden layers and name"""
-    reg = tf.contrib.layers.l2_regularizer(C2)
-    x = x_in
-    for i, layer_size in enumerate(layer_sizes):
-        x = tf.layers.dense(inputs=x,
-                            kernel_initializer=initializers.xavier_initializer(),
-                            units=layer_size,
-                            activation=tf.nn.relu,
-                            kernel_regularizer=reg)#,
-                            #name='hidden_layer_{}_{}'.format(name, i))
-        x = tf.layers.dropout(x, rate=droprate, training=is_training)
-
-    x = tf.layers.dense(inputs=x,
-                        kernel_initializer=initializers.xavier_initializer(),
-                        units=embed_dim,
-                        kernel_regularizer=reg)#,
-                        #name='embed_layer_{}'.format(name))
-    return x
+if conf.model_type == 'nn':
+    from nn_model import nn_net as encode_net
+elif conf.model_type == 'cnn':
+    from cnn_model import cnn_net as encode_net
+elif conf.model_type == 'rnn':
+    from rnn_model import rnn_net as encode_net
+else:
+    raise NotImplementedError("model type: {}".format(conf.model_type))
 
 class Encoder:
     def __init__(self, model_type='rnn'):
-        self.debug_rnn = []
+        self.model_type = model_type
         self.debug_sim = []
-        pass
 
-    def create_tf_embed(self, a_in,  # type: tf.Tensor
-                         b_in,  # type: tf.Tensor
-                         is_training  # type: tf.Tensor
-                         ):
-        # type: (...) -> Tuple[tf.Tensor, tf.Tensor]
-        """Create tf graph for training"""
-        self.emb_b, self.debug_info_b = create_embed_encoder(b_in, is_training, False)
+    def create_tf_embed(self, a_in, b_in, is_training):
+        """
+        Create semantic encoder
+        :param a_in: int32 Tensor in shape [batch_size, seq_len], the input token IDs.
+        :param b_in: int32 Tensor in shape [batch_size, 1 + num_neg, seq_len], the input token IDs.
+        :param is_training: bool, whether in training mode.
+        :return: embedding of input, a_in -> [batch_size, semantic_dim], b_in -> [batch_size, 1 + num_neg, semantic_dim]
+        """
         self.emb_a, self.debug_info_a = create_embed_encoder(a_in, is_training)
-        #emb_a = _create_tf_embed_nn(a_in, is_training, [10], name='a')
-        #emb_b = _create_tf_embed_nn(b_in, is_training, [10], name='b')
+        self.emb_b, self.debug_info_b = create_embed_encoder(b_in, is_training, False)
         self.sim_ab = cal_sim(self.emb_a, self.emb_b)
         return self.emb_a, self.emb_b
 
 def create_embed_encoder(x_in, is_training, is_normal=True):
     if is_normal:
-        embedding, debug_info = rnn_net(x_in, is_training)
+        embedding, debug_info = encode_net(x_in, is_training)
     else:
         x_size = tf.shape(x_in)
         x_in_dim = x_in.get_shape().as_list()[2]
         x_in_reshape = tf.reshape(x_in, [-1, x_in_dim])
-        x_embedding, debug_info = rnn_net(x_in_reshape, is_training)
+        x_embedding, debug_info = encode_net(x_in_reshape, is_training)
         x_embedding_dim = x_embedding.get_shape().as_list()[1]
         embedding = tf.reshape(x_embedding, [-1, x_size[1], x_embedding_dim])
         '''
@@ -79,51 +54,57 @@ def cal_sim(a, b):
     return sim
 
 def tf_sim(a, b, debug_sim=[]):
-    # type: (tf.Tensor, tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]
-    """Define similarity in two cases:
+    """
+    Define similarity in two cases:
         sim: between embedded words and embedded intent labels
-        sim_emb: between individual embedded intent labels only"""
+        sim_emb: between individual embedded intent labels only
+        a: [A]
+        b: [B0+, B1-, B2-, B3-, ..., Bk-]
+    :param a: [batch_size, semantic_dim]
+    :param b: [batch_size, 1 + num_neg, semantic_dim]
+    :param debug_sim:
+    :return: sim: [batch_size, 1 + num_neg], sim_emb: [batch_size, num_neg]
     """
-    a: [A]
-    b: [B0+, B1-, B2-, B3-, ..., Bk-]
-    """
-    if similarity_type == 'cosine':
+    if conf.similarity_type == 'cosine':
         # normalize embedding vectors for cosine similarity
         a = tf.nn.l2_normalize(a, -1)
         b = tf.nn.l2_normalize(b, -1)
 
-    if similarity_type in {'cosine', 'inner'}:
+    if conf.similarity_type in {'cosine', 'inner'}:
         sim = tf.reduce_sum(tf.expand_dims(a, 1) * b, -1)          # sim([A], [B0+, B1-, B2-, B3-, ..., Bk-]) -> [sim(A, B0+), sim(A, B1-), sim(A, B2-), ..., sim(A, Bk-)]
         sim_emb = tf.reduce_sum(b[:, 0:1, :] * b[:, 1:, :], -1)    # sim([B0+], [B1-, B2-, B3-, ..., Bk-]) -> [sim(B0+, B1-), sim(B0+, B2-), ..., sim(B0+, Bk-)]
+
         debug_sim.append((a, tf.expand_dims(a, 1)))
 
         return sim, sim_emb
 
     else:
-        raise ValueError("Wrong similarity type {}, should be 'cosine' or 'inner'".format(similarity_type))
+        raise ValueError("Wrong similarity type {}, should be 'cosine' or 'inner'".format(conf.similarity_type))
 
 def tf_loss(sim, sim_emb):
-    # type: (tf.Tensor, tf.Tensor) -> tf.Tensor
-    """Define loss"""
     """
-    a: [A]
-    b: [B0+, B1-, B2-, B3-, ..., Bk-]
+    Define loss
+        a: [A]
+        b: [B0+, B1-, B2-, B3-, ..., Bk-]
+    :param sim: [batch_size, 1 + num_neg]
+    :param sim_emb: [batch_size, num_neg]
+    :return: loss
     """
     # loss for maximizing similarity with correct action
-    loss = tf.maximum(0., mu_pos - sim[:, 0])           # loss += max(0, mu_pos - sim(A, B0+))
+    loss = tf.maximum(0., conf.mu_pos - sim[:, 0])           # loss += max(0, mu_pos - sim(A, B0+))
 
-    if use_max_sim_neg:
+    if conf.use_max_sim_neg:
         # minimize only maximum similarity over incorrect actions
         max_sim_neg = tf.reduce_max(sim[:, 1:], -1)
-        loss += tf.maximum(0., mu_neg + max_sim_neg)    # loss += max(0, mu_neg + max([sim(A, B1-), sim(A, B2-), ..., sim(A, Bk-)]))
+        loss += tf.maximum(0., conf.mu_neg + max_sim_neg)    # loss += max(0, mu_neg + max([sim(A, B1-), sim(A, B2-), ..., sim(A, Bk-)]))
     else:
         # minimize all similarities with incorrect actions
-        max_margin = tf.maximum(0., mu_neg + sim[:, 1:])
+        max_margin = tf.maximum(0., conf.mu_neg + sim[:, 1:])
         loss += tf.reduce_sum(max_margin, -1)
 
     # penalize max similarity between intent embeddings
     max_sim_emb = tf.maximum(0., tf.reduce_max(sim_emb, -1))
-    loss += max_sim_emb * C_emb                             # loss += C_emb * (max(0, max([sim(B0+, B1-), sim(B0+, B2-), ..., sim(B0+, Bk-)])))
+    loss += max_sim_emb * conf.C_emb                             # loss += C_emb * (max(0, max([sim(B0+, B1-), sim(B0+, B2-), ..., sim(B0+, Bk-)])))
 
     # average the loss over the batch and add regularization losses
     loss = (tf.reduce_mean(loss) + tf.losses.get_regularization_loss())
