@@ -1,4 +1,4 @@
-from config import conf, SEQ_LEN, FLAGS
+from config import SEQ_LEN, FLAGS
 import tensorflow as tf
 from embedding import create_embed_encoder, tf_sim, tf_loss
 from data_utils import gen_train_samples, gen_train_input_fn
@@ -15,8 +15,10 @@ def model_fn(features, labels, mode, params):
     emb_b, _ = create_embed_encoder(features['entity_ids_list'], is_training=is_training, is_normal=False)
     # Define loss and optimizer
     sim_op, sim_emb = tf_sim(emb_a, emb_b)
-    loss_op = tf_loss(sim_op, sim_emb)
-    train_op = tf.train.AdamOptimizer(learning_rate=conf.learning_rate).minimize(loss_op, global_step=tf.train.get_global_step())
+    total_loss = tf_loss(sim_op, sim_emb)
+    #### Configuring the optimizer
+    train_op, learning_rate, _ = model_utils.get_train_op(FLAGS, total_loss)
+    #train_op = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate).minimize(total_loss, global_step=tf.train.get_global_step())
     # TF Estimators requires to return a EstimatorSpec, that specify
     # the different ops for training, evaluating, predicting...
     # If prediction mode, early return
@@ -24,7 +26,7 @@ def model_fn(features, labels, mode, params):
         return tf.estimator.EstimatorSpec(mode, predictions={'sim_op': sim_op})  # pred_classes})
     estim_specs = tf.estimator.EstimatorSpec(
         mode=mode,
-        loss=loss_op,
+        loss=total_loss,
         train_op=train_op,
         )
     return estim_specs
@@ -41,16 +43,16 @@ def run():
     # Define the input function for training
     input_fn = tf.estimator.inputs.numpy_input_fn(
         x={'entity_ids': x_train, 'entity_ids_list': y_train}, y=y_train,
-        batch_size=conf.batch_size, num_epochs=None, shuffle=True)
+        batch_size=FLAGS.batch_size, num_epochs=None, shuffle=True)
     # Define the input function based on tf.record file
-    #input_fn = gen_train_input_fn(conf.train_samples)
+    #input_fn = gen_train_input_fn(FLAGS.train_samples)
     # Train the Model
     model.train(input_fn, steps=FLAGS.train_steps)
     # save model
     feature_spec = {'entity_ids': tf.placeholder(dtype=tf.int32, shape=[None, SEQ_LEN], name='entity'), \
                     'entity_ids_list': tf.placeholder(dtype=tf.int32, shape=[None, None, SEQ_LEN], name='entity_list')}
     serving_input_receiver_fn = tf.estimator.export.build_raw_serving_input_receiver_fn(feature_spec)
-    model.export_savedmodel(conf.models_path + 'estimator', serving_input_receiver_fn)
+    model.export_savedmodel(FLAGS.serving_model_dir + 'estimator', serving_input_receiver_fn)
 
 
 if __name__ == "__main__":

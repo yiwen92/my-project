@@ -130,7 +130,7 @@ if __name__ == "__main__":
 6、有扎实的数学基础，熟悉并能灵活运用高数、线性代数、概率论等数学知识；\
 7、良好的英文阅读能力和销售动力；\
 8、具备良好的逻辑思维能力与沟通表达能力。"
-    #eS = entitySimilar(ckpt_num=130000); eS.analyze("nlp", text)
+    eS = entitySimilar(ckpt_num=274300); eS.analyze("nlp", text)
     es = entity_similar(ckpt_num=8500)
     #es.get_train_corp()
     es.train()
