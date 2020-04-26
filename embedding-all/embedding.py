@@ -109,3 +109,9 @@ def tf_loss(sim, sim_emb):
     # average the loss over the batch and add regularization losses
     loss = (tf.reduce_mean(loss) + tf.losses.get_regularization_loss())
     return loss
+
+def cross_entropy_loss(cos_sim, label, debug_info={}):
+    entropy = tf.nn.softmax_cross_entropy_with_logits(logits=cos_sim, labels=label)
+    loss = tf.reduce_mean(entropy)
+    debug_info['cos_sim']=cos_sim;debug_info['label']=label;debug_info['entropy']=entropy;debug_info['loss']=loss
+    return loss

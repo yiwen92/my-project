@@ -1,10 +1,10 @@
-import random, json, collections, os, re
+import random, json, collections, os, re, copy
 import numpy as np
 from tqdm import tqdm
 from utils import clean_line, re_en, token2list
 from collections import defaultdict
 from config import MAX_NUM_NEG, conf, VOCAB_SIZE, SEQ_LEN, FLAGS
-from seg_utils import Tokenizer
+from seg_utils import Tokenizer, is_valid_tokens
 import tensorflow as tf
 
 word2id = json.load(open(conf.vocab, encoding="utf8"))
@@ -86,61 +86,56 @@ class TrainData():
         json.dump(train_set, open(conf.train_samples, "w", encoding="utf8"), ensure_ascii=False, indent=2)
         json.dump(valid_set, open(conf.valid_samples, "w", encoding="utf8"), ensure_ascii=False, indent=2)
 
-    def gen_vocab(self, texts):
+    def gen_vocab(self, title2entitys):
         token_freq = defaultdict(int); token_freq["UNKNOWN"] = 1e8
-        for line in texts:
-            for t in line:
-                if re_en.fullmatch(t): token_freq[t] += 1
-                else:
-                    for e in list(t): token_freq[e] += 1
+        for title, entitys in title2entitys.items():
+          line = [title] + entitys
+          for t in line:
+              if re_en.fullmatch(t): token_freq[t] += 1
+              else:
+                  for e in list(t): token_freq[e] += 1
         sorted_token_freq = sorted(token_freq.items(), key=lambda d: d[1], reverse=True)[:VOCAB_SIZE]
         word2id = {w: i for i, (w, f) in enumerate(sorted_token_freq)}
         print("generate word2id file: %s" % (conf.vocab))
         json.dump(word2id, open(conf.vocab, "w", encoding="utf8"), ensure_ascii=False, indent=2)
 
     def gen_train_sample_based_title_desc(self):
-        entity_dicts = [line.strip() for line in open(conf.entity_file, encoding="utf8").readlines()]
-        title_entitys, sample_set = {}, []
+        entity_dicts = {line.strip(): 1 for line in open(conf.new_entity_file, encoding="utf8").readlines()}
+        valid_titles = {line.strip(): 1 for line in open("data/valid_titles", encoding="utf8").readlines()}
+        title_entitys, entity_title, sample_set = {}, {}, []
         matchObj = re.compile(r'(.+)&([0-9]+)', re.M | re.I)
-        texts = [line.strip().split("&")[0].split("\t") for line in open(conf.jdtitledesc_file, encoding="utf8").readlines() if matchObj.match(line)]
-        text = []
-        # 挑选出实体词
-        for line in tqdm(texts, total=len(texts)):
-            tmp = [line[0]] + [e for e in line[1:] if e in entity_dicts]
-            if len(tmp) < 2: continue
-            text.append(tmp)
-        if conf.over_write_vocab: self.gen_vocab(text)
-        # 根据title归一化
-        for e in text:
-            title, entitys = e[0], set(e[1:])
-            if title not in title_entitys: title_entitys[title] = set()
-            title_entitys[title].update(entitys)
+        title2entitys = {line.strip().lower().split('\t')[0]: line.strip().lower().split('\t')[1:] \
+          for line in open("data/cv_title2entitys_corpu", encoding="utf8").readlines()}
+        title_entitys = {k: v for k, v in title2entitys.items() if len(v) >= 10 and len(v) < 20}
+        if conf.over_write_vocab: self.gen_vocab(title_entitys)
         _keys_ = list(title_entitys.keys())
         print("sample(1+k negative) train and valid set...")
         num_neg = min(len(title_entitys) - 1, MAX_NUM_NEG)
         # 采样
-        for title, entitys in title_entitys.items():
-            cur_word_set = set(); cur_word_set.add(title); cur_word_set.update(entitys)
-            positive_entitys = random.sample(entitys, min(len(entitys), 5))         # 正样本
-            negative_indexes = [i for i in range(len(_keys_)) if _keys_[i] != title]
+        for title, entitys in tqdm(title_entitys.items(), total=len(title_entitys)):
+            positive_entitys = random.sample(entitys, min(len(entitys), 10))         # 正样本
+            negative_titles_candidate = [e for e in _keys_ if e != title]
             for pos_entity in positive_entitys:     # 负样本
-                negative_entitys = []
-                random.shuffle(negative_indexes)
-                for n in negative_indexes:
-                    if (len(negative_entitys) >= num_neg): break
-                    if title_entitys[_keys_[n]].symmetric_difference(cur_word_set): continue
-                    negative_entitys.append(random.sample(title_entitys[_keys_[n]], 1)[0])
-                assert len(negative_entitys) == num_neg
-                sample_set.append([title, pos_entity, negative_entitys])
+              negative_entitys = []
+              negs = random.sample(negative_titles_candidate, num_neg)
+              for neg_tit in negs:
+                try: negative_entitys.append(random.sample(title_entitys[neg_tit], 1)[0])
+                except:
+                  a=1
+              if len(negative_entitys) < num_neg:
+                negative_entitys += [negative_entitys[0]] * (num_neg - len(negative_entitys))
+              assert len(negative_entitys) == num_neg
+              sample_set.append([title, pos_entity, list(negative_entitys)])
+        #exit()
         train_set = {i: ele for i, ele in enumerate(sample_set[: int(len(sample_set) * conf.train_valid_ratio)])}
         valid_set = {i: ele for i, ele in enumerate(sample_set[int(len(sample_set) * conf.train_valid_ratio): ])}
         print("total_sample: %d\ttrain_sample: %d\tvalid_sample :%d" % (len(sample_set), len(train_set), len(valid_set)))
-        print("generate train sample file :%s\tvalid sample file: %s" % (conf.train_samples, conf.valid_samples))
-        json.dump(train_set, open(conf.train_samples, "w", encoding="utf8"), ensure_ascii=False, indent=2)
-        json.dump(valid_set, open(conf.valid_samples, "w", encoding="utf8"), ensure_ascii=False, indent=2)
+        print("generate train sample file :%s\tvalid sample file: %s" % (FLAGS.train_samples, FLAGS.valid_samples))
+        json.dump(train_set, open(FLAGS.train_samples, "w", encoding="utf8"), ensure_ascii=False, indent=2)
+        json.dump(valid_set, open(FLAGS.valid_samples, "w", encoding="utf8"), ensure_ascii=False, indent=2)
         a=1
 
-def batch_iter(x, y, batch_size=64):
+def batch_iter(x, y, label, batch_size=64):
     np.random.seed(8)
     """生成批次数据"""
     data_len = len(x)
@@ -149,11 +144,12 @@ def batch_iter(x, y, batch_size=64):
     indices = np.random.permutation(np.arange(data_len))
     x_shuffle = x[indices]
     y_shuffle = y[indices]
+    label_shuffle = label[indices]
 
     for i in range(num_batch):
         start_id = i * batch_size
         end_id = min((i + 1) * batch_size, data_len)
-        yield x_shuffle[start_id: end_id], y_shuffle[start_id: end_id]
+        yield x_shuffle[start_id: end_id], y_shuffle[start_id: end_id], label_shuffle[start_id: end_id]
 
 def seq2ids(text, max_length=SEQ_LEN):
     """将文本转换为id表示"""
@@ -180,9 +176,10 @@ def gen_train_samples(file_path):
         nid = [seq2ids(e) for e in n]
         ts = train_sample(kid, pid, nid)
         samples.append(ts)
-    X = np.array([e.entity for e in samples])
-    Y = np.array([[e.pos_entity] + e.neg_entitys for e in samples])
-    return X, Y
+    X = np.array([e.entity for e in samples])           #  单个实体
+    Y = np.array([[e.pos_entity] + e.neg_entitys for e in samples])         # 正样本 + k个负样本
+    label = np.array([[1] + [0] * (Y.shape[1] - 1)] * Y.shape[0])  # 1 + k 个标签，第一个为1，其它的为0
+    return X, Y, label
 
 #************************************************ tensorflow tf.record 训练数据构建 ************************************************#
 class InputExample(object):
@@ -344,5 +341,5 @@ if __name__ == "__main__":
     #gen_train_input_fn(conf.train_samples)
     td = TrainData()
     #td.gen_train_samples()
-    td.gen_train_sample_based_title_desc()
-    gen_train_samples(conf.train_samples)
+    #td.gen_train_sample_based_title_desc()
+    gen_train_samples(FLAGS.valid_samples)

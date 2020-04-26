@@ -30,10 +30,10 @@ class Config:
         self.entity_file = "dict/entitys.txt"
         self.new_entity_file = "dict/newentity"#"dict/new_entity"
         self.similarity_type = 'cosine'
-        self.mu_pos = 0.8
-        self.mu_neg = -0.4
-        self.C_emb = 0.8
-        self.use_max_sim_neg = True
+        self.mu_pos = 1.0
+        self.mu_neg = 1.0
+        self.C_emb = 1.2
+        self.use_max_sim_neg = False
         self.jdtitledesc_file = "data/part-00000"
 
 conf = Config()
@@ -63,6 +63,6 @@ flags.DEFINE_string("decay_method", default="poly", help="Poly or cos.")
 flags.DEFINE_float("min_lr_ratio", default=0.001, help="Minimum ratio learning rate.")
 flags.DEFINE_float("weight_decay", default=0.001, help="Weight decay rate.")
 flags.DEFINE_float("adam_epsilon", default=1e-8, help="Adam epsilon.")
-flags.DEFINE_string("serving_model_dir", default="models/", help="Estimator model_dir for serving service.")
+flags.DEFINE_string("serving_model_dir", default="models/estimator", help="Estimator model_dir for serving service.")
 
 FLAGS = tf.app.flags.FLAGS
