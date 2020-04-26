@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug (Launch) - Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch Search",
+            "request": "launch",
+            "mainClass": "com.echeng.dps.search.server.ESMain",
+            "vmArgs": [
+                "-server",
+                "-Xms20g",
+                "-Xmx20g",
+                "-XX:+UseG1GC",
+                "-XX:MaxGCPauseMillis=200",
+                "-XX:+HeapDumpOnOutOfMemoryError",
+                "-Dcom.sun.management.jmxremote.port=16702",
+                "-Dcom.sun.management.jmxremote.ssl=false",
+                "-Dcom.sun.management.jmxremote.authenticate=false"
+            ],
+            "classPaths": [
+                "build/libs/edps_v3-0.0.1.jar"
+            ],
+            "preLaunchTask": "build"
+        }
+    ],
+}
