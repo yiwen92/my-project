@@ -101,8 +101,8 @@ def aa():
 def cal_weight_effect():
     dcg_new, ndcg_new, dcg_baseline, ndcg_baseline = 1e-8, 1e-8, 1e-8, 1e-8
     text = [e.strip().split("\t") for e in open("get_jdcv_data/feedback2982.res", encoding="utf8").readlines()]
-    text_baseline = [e.strip().split("\t") for e in open("get_jdcv_data/feedback2982.res.txt.baseline", encoding="utf8").readlines()]
-    text_new = [e.strip().split("\t") for e in open("get_jdcv_data/feedback2982.res.txt", encoding="utf8").readlines()]
+    text_baseline = [e.strip().split("\t") for e in open("get_jdcv_data/feedback2982.res.baseline", encoding="utf8").readlines()]
+    text_new = [e.strip().split("\t") for e in open("get_jdcv_data/feedback2982.res.new", encoding="utf8").readlines()]
     label_score = {"_".join([keyword, cv_id]): is_correct for id, rank, cv_id, pid, task_id, is_correct, createtime, keyword in text[1:]}
     for keyword, cv_ids in text_baseline:
         label_list = [label_score.get("_".join([keyword, e]), 0) for e in cv_ids.split()]
@@ -116,9 +116,20 @@ def cal_weight_effect():
     avg_dcg_new = dcg_new / len(text_new); avg_ndcg_new = ndcg_new / len(text_new)
     print("avg_dcg_baseline: %.6f\tavg_ndcg_baseline: %.6f\navg_dcg_new: %.6f\tavg_ndcg_new: %.6f" % \
           (avg_dcg_baseline, avg_ndcg_baseline, avg_dcg_new, avg_ndcg_new))
+    a=1;
+
+def t():
+    import tensorflow as tf
+    input_ids = [[6809, 4638, 689, 2900, 3403, 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+    _abs = tf.abs(input_ids); _used = tf.sign(_abs)
+    _lengths = tf.reduce_sum(_used, reduction_indices=1)
+    sess = tf.Session()
+    fetch = sess.run([_abs, _used, _lengths], {tf.placeholder(dtype=tf.int64, shape=[None, len(input_ids[0])], name="input_ids"): input_ids})
+    aa=set([5,1,2,3,4]).symmetric_difference(set([2,1,4,3,5]))
     a=1
 
 if __name__ == "__main__":
+    t()
     a=len("211") #"211".isdigit()
     #gen_true_data("get_jdcv_data/query.freq.csv", "get_jdcv_data/query.true")
     #test(); exit()

@@ -151,7 +151,7 @@ def get_model_fn():
     """doc."""
     #### Training or Evaluation
     is_training = (mode == tf.estimator.ModeKeys.TRAIN)
-    assert is_training
+    #assert is_training
 
     #### Retrieve `mems` from `params["cache"]`
     mems = {}
@@ -294,6 +294,19 @@ def main(unused_argv):
 
   #### Training
   estimator.train(input_fn=train_input_fn, max_steps=FLAGS.train_steps)
+
+  ### tensorflow serving save model ###
+  model_path = "./serving_model/"
+  '''
+  self.input_ids = tf.placeholder(dtype=tf.int64, shape=[batch_size, FLAGS.seq_len], name="input_ids")
+  self.segment_ids = tf.placeholder(dtype=tf.int32, shape=[batch_size, FLAGS.seq_len], name="segment_ids")
+  self.input_mask = tf.placeholder(dtype=tf_float, shape=[batch_size, FLAGS.seq_len], name="input_mask")
+  self.label_ids = tf.placeholder(dtype=tf.int64, shape=[batch_size], name="label_ids")
+  '''
+  feature_spec = {'input': tf.placeholder(dtype=tf.int32, shape=[None, 16], name='feat_input')}
+  serving_input_receiver_fn = tf.estimator.export.build_raw_serving_input_receiver_fn(feature_spec)
+  estimator.export_savedmodel(model_path, serving_input_receiver_fn)
+  a=1
 
 def cache_fn():
   tf_float = tf.bfloat16 if FLAGS.use_bfloat16 else tf.float32

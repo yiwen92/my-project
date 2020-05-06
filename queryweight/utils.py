@@ -148,7 +148,7 @@ def get_feature(word, sen2terms, weight_attn, weight_idf, weight_lm):
     for fid in features:
         feature_vector.extend(fid[1])
         for i in range(len(fid[1])):
-            fmap.append("\t".join([str(fidindex), fid[2]+":"+str(i)]))
+            fmap.append("\t".join([str(fidindex), fid[2]+":"+str(i), "q"]))
             fidindex += 1
     return feature_vector, fmap
 
@@ -173,7 +173,7 @@ def filter_ids(in_path, out_path):
 
 def cal_ndcg(label_list, topk):
     label_list = [int(e) for e in label_list]
-    dcg, idcg = 1e-8, 1e-8
+    dcg, idcg = 0.0, 0.0
     pred = label_list[:topk]
     label = sorted(label_list, key=lambda d: d, reverse=True)[: topk]
     diff = topk - len(label_list)
@@ -183,7 +183,7 @@ def cal_ndcg(label_list, topk):
     for i in range(len(pred)):
         dcg += (pow(2, pred[i]) - 1) / math.log2(i + 2)
         idcg += (pow(2, label[i]) - 1) / math.log2(i + 2)
-    ndcg = dcg / idcg
+    ndcg = dcg / (idcg + 1e-8)
     return dcg, idcg, ndcg
 
 def parse_xgb_dict(xgb_dump_path):

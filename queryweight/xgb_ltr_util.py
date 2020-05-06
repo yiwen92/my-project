@@ -8,8 +8,9 @@ from scipy import sparse
 import matplotlib.pyplot as plt
 from qw import query_weight
 from generate_train_samples import get_feature
+from sklearn.externals import joblib
 
-data_path, TASK, MODEL_FILE = "get_jdcv_data/", "query_weight", "rank_model/query_weight_xgb.model"
+data_path, TASK, MODEL_FILE = "get_jdcv_data/", "query_weight", "rank_model/query_weight_xgb1.model"
 #data_path, TASK, MODEL_FILE = "rank/", "mq2008", "rank/xgb.model"
 
 def load_group_data(group_data_file):
@@ -40,13 +41,14 @@ def train(model_file):
     valid_dmatrix.set_group(group_valid)
     test_dmatrix.set_group(group_test)
 
-    params = {'booster':'gbtree', 'objective': 'rank:pairwise', 'eta': 0.01, 'gamma': 1.0, 'min_child_weight': 0.1, 'max_depth': 6, \
+    params = {'booster':'gbtree', 'objective': 'rank:pairwise', 'eta': 0.01, 'gamma': 1.0, 'min_child_weight': 0.1, 'max_depth': 2, \
               'eval_metric':'ndcg@1'}     # ndcg@1, logloss
-    xgb_model = xgb.train(params, train_dmatrix, num_boost_round=400, evals=[(train_dmatrix, 'train'), (valid_dmatrix, 'valid'), (test_dmatrix, 'test')])
+    xgb_model = xgb.train(params, train_dmatrix, num_boost_round=4, evals=[(train_dmatrix, 'train'), (valid_dmatrix, 'valid'), (test_dmatrix, 'test')])
     pred = xgb_model.predict(test_dmatrix)
     print("save model to %s" % (model_file))
     xgb_model.dump_model(model_file + ".txt")
     xgb_model.save_model(model_file)
+    joblib.dump(xgb_model, 'rank_model/xgb_clf.m')
     # save figures
     plt.clf()
     xgb.plot_importance(xgb_model)
@@ -194,7 +196,7 @@ if __name__ == "__main__":
     fea.append("4 3:1 4:1 10:2 11:0.286 14:1 15:1 23:1 27:1 30:0.18 31:0.177 32:0.289")
     #f4 = "0 3:1 4:1 10:1 11:0.5 14:1 15:1 22:1 24:1 30:0.199 31:0.301 32:0.857"
     #trans_data(data_path)
-    #train(model_file=MODEL_FILE)    ;   exit()
+    train(model_file=MODEL_FILE)    ;   exit()
     #res = {i: predict(f) for i, f in enumerate(fea)}
     #predict(fea[0])
     rank_query(query)

@@ -3,7 +3,7 @@ from config import conf
 from utils import FUNC_DICT, INDUS_DICT, PUNCTUATION_LIST, contain_chinese_word
 
 SPECIAL_WORDS_CUSTOM = ['c++','cocos2d-x','.net','--','node.js','c/s','c#','unity3d','cocos2d','u-boot','u3d','2d','3d','html5','j2ee','o2o', \
-                        '外贸销售']
+                        '外贸销售','h5','as3']
 SPECIAL_WORDS_FUNC = list(set([e.lower().strip().split()[0] for e in open(conf.func_file, encoding="utf8").readlines() if not contain_chinese_word(e.strip().split()[0])]))
 SPECIAL_WORDS_INDU = list(set([e.lower().strip().split()[0] for e in open(conf.indus_file, encoding="utf8").readlines() if not contain_chinese_word(e.strip().split()[0])]))
 SPECIAL_WORDS = SPECIAL_WORDS_CUSTOM
@@ -62,7 +62,7 @@ def en_split(text_origin):
                 res.append(e)
     return res
 
-a=en_split("j2ee")
+a=en_split("as3")
 
 def valid_idf(token):
     if token.isdigit() and len(token) == 1: return False    # 单个数字的idf无效
@@ -157,7 +157,7 @@ class Tokenizer():
 
 if __name__ == '__main__':
     try: que = sys.argv[1]
-    except: que = "hadoop大数据开发工程师" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
+    except: que = "h5" #"advc#montage+深圳c++c/s5k"  新加坡航空公司
     #nlu_seg = nlu_cut(que)
     #jieba_seg = jieba_cut("分布式文件系统")
     #a0=list(jieba.cut_for_search(que)); a1=list(jieba.tokenize(que)); a2=list(jieba.cut(que))
