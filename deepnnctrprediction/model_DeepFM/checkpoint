@@ -1,0 +1,2 @@
+model_checkpoint_path: "DeepFM20191009"
+all_model_checkpoint_paths: "DeepFM20191009"
