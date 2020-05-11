@@ -115,3 +115,19 @@ def cross_entropy_loss(cos_sim, label, debug_info={}):
     loss = tf.reduce_mean(entropy)
     debug_info['cos_sim']=cos_sim;debug_info['label']=label;debug_info['entropy']=entropy;debug_info['loss']=loss
     return loss
+
+def log_loss(cos_sim, debug_info={}):
+    prob = tf.nn.softmax(cos_sim)
+    hit_prob = tf.slice(prob, [0, 0], [-1, 1])
+    loss = -tf.reduce_mean(tf.log(hit_prob))
+    debug_info['cos_sim']=cos_sim;debug_info['prob']=prob;debug_info['hit_prob']=hit_prob;debug_info['loss']=loss
+    return loss
+
+def multi_loss(sim, sim_emb, label, debug_info={}):
+    sim_origin = tf_loss(sim, sim_emb)
+    sim_entrop = cross_entropy_loss(sim, label)
+    sim_log = log_loss(sim)
+    loss = 0.3 * sim_origin + 0.4 * sim_entrop + 0.5 * sim_log
+    debug_info['sim']=sim;debug_info['sim_emb']=sim_emb;debug_info['label']=label;debug_info['sim_origin']=sim_origin
+    debug_info['sim_entrop']=sim_entrop; debug_info['sim_log']=sim_log;debug_info['loss']=loss
+    return loss

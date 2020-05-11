@@ -1,6 +1,6 @@
 from config import SEQ_LEN, FLAGS
 import tensorflow as tf
-from embedding import create_embed_encoder, tf_sim, tf_loss, cross_entropy_loss
+from embedding import create_embed_encoder, tf_sim, tf_loss, cross_entropy_loss, log_loss, multi_loss
 from data_utils import gen_train_samples, gen_train_input_fn
 import model_utils
 
@@ -19,7 +19,8 @@ def model_fn(features, labels, mode, params):
     # the different ops for training, evaluating, predicting...
     if mode == tf.estimator.ModeKeys.TRAIN:
         # total_loss = tf_loss(sim_op, sim_emb)
-        total_loss = cross_entropy_loss(sim_op, features['label'])
+        #total_loss = cross_entropy_loss(sim_op, features['label'])
+        total_loss = multi_loss(sim_op, sim_emb, features['label'])
         #### Configuring the optimizer
         train_op, learning_rate, _ = model_utils.get_train_op(FLAGS, total_loss)
         # train_op = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate).minimize(total_loss, global_step=tf.train.get_global_step())

@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from config import conf, SEQ_LEN, FLAGS, MAX_NUM_NEG
-from embedding import Encoder, tf_sim, tf_loss, cross_entropy_loss
+from embedding import Encoder, tf_sim, tf_loss, cross_entropy_loss, log_loss, multi_loss
 from data_utils import batch_iter, gen_train_samples, seq2ids
 from sklearn.metrics.pairwise import cosine_similarity
 from seg_utils import Tokenizer
@@ -25,7 +25,7 @@ class entity_similar:
         self.word_embed, self.intent_embed = self.encoder.create_tf_embed(self.a_in, self.b_in, self.is_training)  # 语义编码
 
     def train(self):
-        dubug_info = {}
+        debug_info = {}
         tf.logging.set_verbosity(tf.logging.INFO)
         # 载入训练集
         x_train, y_train, label_train = gen_train_samples(FLAGS.train_samples)
@@ -35,7 +35,9 @@ class entity_similar:
         saver = tf.train.Saver()
         sim_op, sim_emb = tf_sim(self.word_embed, self.intent_embed)
         #self.loss = tf_loss(sim_op, sim_emb)
-        self.loss = cross_entropy_loss(sim_op, self.label, dubug_info)
+        #self.loss = cross_entropy_loss(sim_op, self.label, debug_info)
+        #self.loss = log_loss(sim_op, debug_info)
+        self.loss = multi_loss(sim_op, sim_emb, self.label, debug_info)
         train_op = tf.train.AdamOptimizer().minimize(self.loss)
         print('Training and evaluating...')
         self.session.run(tf.global_variables_initializer())
@@ -49,7 +51,7 @@ class entity_similar:
                     {'loss': self.loss, 'train_op': train_op, 'a_in': self.a_in, 'b_in': self.b_in,
                      'word_embed': self.word_embed, 'intent_embed': self.intent_embed, \
                      'debug_infoa': self.encoder.debug_info_a, 'debug_infob': self.encoder.debug_info_b, \
-                     'debug_sim': self.encoder.debug_sim, "dubug_info": dubug_info},
+                     'debug_sim': self.encoder.debug_sim, "debug_info": debug_info},
                     feed_dict={self.a_in: x_batch, self.b_in: y_batch, self.label: label_batch, self.is_training: True}
                 )
                 if total_batch % print_per_batch == 0:
@@ -134,7 +136,7 @@ if __name__ == "__main__":
 7、良好的英文阅读能力和销售动力；\
 8、具备良好的逻辑思维能力与沟通表达能力。hr专员"
     #eS = entitySimilar(ckpt_num=14000); eS.analyze("nlp", text)
-    es = entity_similar(ckpt_num=8500)
+    es = entity_similar()
     #es.get_train_corp()
     es.train()
     #es.predict('java', ['java', '测试','android', '销售', '自然语言处理'])
