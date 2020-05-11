@@ -1,41 +1,41 @@
-0	term_position:0
-1	term_position:1
-2	term_position:2
-3	term_type:0
-4	term_type:1
-5	term_type:2
-6	term_type:3
-7	term_type:4
-8	term_type:5
-9	term_length:0
-10	term_offset:0
-11	pre_term_position:0
-12	pre_term_position:1
-13	pre_term_position:2
-14	pre_term_type:0
-15	pre_term_type:1
-16	pre_term_type:2
-17	pre_term_type:3
-18	pre_term_type:4
-19	pre_term_type:5
-20	behind_term_position:0
-21	behind_term_position:1
-22	behind_term_position:2
-23	behind_term_type:0
-24	behind_term_type:1
-25	behind_term_type:2
-26	behind_term_type:3
-27	behind_term_type:4
-28	behind_term_type:5
-29	term_attention_weight:0
-30	term_idf_weight:0
-31	term_lm_weight:0
-32	term_entity_type:0
-33	term_entity_type:1
-34	term_entity_type:2
-35	pre_term_entity_type:0
-36	pre_term_entity_type:1
-37	pre_term_entity_type:2
-38	behind_term_entity_type:0
-39	behind_term_entity_type:1
-40	behind_term_entity_type:2
+0	term_position:0	q
+1	term_position:1	q
+2	term_position:2	q
+3	term_type:0	q
+4	term_type:1	q
+5	term_type:2	q
+6	term_type:3	q
+7	term_type:4	q
+8	term_type:5	q
+9	term_length:0	q
+10	term_offset:0	q
+11	pre_term_position:0	q
+12	pre_term_position:1	q
+13	pre_term_position:2	q
+14	pre_term_type:0	q
+15	pre_term_type:1	q
+16	pre_term_type:2	q
+17	pre_term_type:3	q
+18	pre_term_type:4	q
+19	pre_term_type:5	q
+20	behind_term_position:0	q
+21	behind_term_position:1	q
+22	behind_term_position:2	q
+23	behind_term_type:0	q
+24	behind_term_type:1	q
+25	behind_term_type:2	q
+26	behind_term_type:3	q
+27	behind_term_type:4	q
+28	behind_term_type:5	q
+29	term_attention_weight:0	q
+30	term_idf_weight:0	q
+31	term_lm_weight:0	q
+32	term_entity_type:0	q
+33	term_entity_type:1	q
+34	term_entity_type:2	q
+35	pre_term_entity_type:0	q
+36	pre_term_entity_type:1	q
+37	pre_term_entity_type:2	q
+38	behind_term_entity_type:0	q
+39	behind_term_entity_type:1	q
+40	behind_term_entity_type:2	q
