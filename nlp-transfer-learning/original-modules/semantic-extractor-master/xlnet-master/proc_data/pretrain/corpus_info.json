@@ -1,0 +1,1 @@
+{"vocab_size": 32000, "bsz_per_host": 32, "num_core_per_host": 1, "seq_len": 512, "reuse_len": 256, "uncased": true, "bi_data": true, "mask_alpha": 6, "mask_beta": 1, "num_predict": 85, "use_eod": true, "sp_path": "downloads/xlnet_cased_L-12_H-768_A-12/spiece.model", "input_glob": "data/pretrain/*.txt"}
