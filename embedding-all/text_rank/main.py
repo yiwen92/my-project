@@ -44,13 +44,27 @@ def textRank(sc, sims, thr_sim=0.7, sc_pow=0.7):
             for j in range(len(sc)):
                 if i == j: continue
                 s += sc[j] * sims[j][i]
-            sc[i] = 0.15 + 0.85 * s
+            #sc[i] = 0.15 + 0.85 * s
+            sc[i] = 0.15/len(sims) + 0.85 * s
         if np.sum(np.abs(sc - ss)) < 1e-8:
             break
 
         # for i in range(len(sc)):sc[i] *= math.pow(sc_[i], sc_pow)
     print(sc)
     return sc
+
+def my_text_rank(sim_matrix, d=0.85, max_step=1000, tole=1e-8):
+    score = np.ones([len(sim_matrix)])
+    norm_sim_matrix = sim_matrix / sim_matrix.sum(axis=0)       # 相似矩阵行归一化到概率空间
+    norm_score = score / score.sum(axis=0)      # 初始分数向量归一化到概率空间
+    old_val = copy.deepcopy(norm_score)
+    new_val = np.ones([len(sim_matrix)])
+    # 迭代求解
+    for step in range(max_step):
+        new_val = (1 - d) / len(sim_matrix) + d * np.matmul(norm_sim_matrix, old_val)       # page rank 迭代公式
+        if np.sum(np.abs(new_val - old_val)) < tole: break
+        old_val = new_val
+    return new_val
 
 def cal_sim(word1, word2):
     if word1 not in WV.vocab or word2 not in WV.vocab:
@@ -65,6 +79,8 @@ def text_rank(word_list):
         for j in range(len(word_list)):
             sim_mat[i][j] = cal_sim(word_list[i], word_list[j])
     # 迭代得到句子的textrank值，排序并取出摘要"""
+    my_scores = my_text_rank(sim_mat)
+    my_rank_words = sorted(((my_scores[i], s) for i, s in enumerate(word_list)), reverse=True)
     # 利用句子相似度矩阵构建图结构，句子为节点，句子相似度为转移概率
     nx_graph = nx.from_numpy_array(sim_mat)
     # 得到所有句子的textrank值
@@ -77,6 +93,8 @@ def text_rank(word_list):
 
 
 if __name__ == "__main__":
+    #text_rank(["熟悉","算法","开发"])
+    a, aa = cosine_similarity([[0.8, 0.9, 0.2]], [[0.5, 0.4, 0.1]])[0][0], cosine_similarity([[0.8, 0.9, 0.2]], [[0.1, 0.2, 0.9]])[0][0]
     texts = [list(jieba.cut(line.strip())) for line in open("../data/corpus", encoding="utf8").readlines()]
     #get_word2vec()
     res = text_rank(list(set(texts[4])))
