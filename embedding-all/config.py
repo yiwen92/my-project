@@ -16,7 +16,7 @@ SEQ_LEN = 10             # 序列长度
 
 class Config:
     def __init__(self):
-        self.model_type = 'rnn'      # 语义编码网名类型: ['nn', 'cnn', 'rnn', 'attention']
+        self.model_type = 'atten'      # 语义编码网名类型: ['nn', 'cnn', 'rnn', 'atten']
         self.num_steps = 10 # estimator 迭代次数
         self.num_epochs = 1  # 总迭代轮次
         self.train_valid_ratio = 0.9    # 训练集和测试集的比例
@@ -65,5 +65,16 @@ flags.DEFINE_float("min_lr_ratio", default=0.001, help="Minimum ratio learning r
 flags.DEFINE_float("weight_decay", default=0.001, help="Weight decay rate.")
 flags.DEFINE_float("adam_epsilon", default=1e-8, help="Adam epsilon.")
 flags.DEFINE_string("serving_model_dir", default="models/estimator", help="Estimator model_dir for serving service.")
+# Attention 网络配置
+flags.DEFINE_string("model_config_path", default="models/config.json", help="Model config path.")
+flags.DEFINE_bool("use_bfloat16", False, help="Whether to use bfloat16.")
+flags.DEFINE_float("dropout", default=0.1, help="Dropout rate.")
+flags.DEFINE_float("dropatt", default=0.1, help="Attention dropout rate.")
+flags.DEFINE_enum("init", default="normal", enum_values=["normal", "uniform"], help="Initialization method.")
+flags.DEFINE_float("init_range", default=0.1, help="Initialization std when init is uniform.")
+flags.DEFINE_float("init_std", default=0.02, help="Initialization std when init is normal.")
+flags.DEFINE_integer("clamp_len", default=-1, help="Clamp length")
+flags.DEFINE_string("summary_type", default="last", help="Method used to summarize a sequence into a compact vector.")
+flags.DEFINE_bool("use_summ_proj", default=True, help="Whether to use projection for summarizing sequences.")
 
 FLAGS = tf.app.flags.FLAGS

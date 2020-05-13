@@ -7,6 +7,8 @@ elif conf.model_type == 'cnn':
     from cnn_model import cnn_net as encode_net
 elif conf.model_type == 'rnn':
     from rnn_model import rnn_net as encode_net
+elif conf.model_type == 'atten':
+    from attention_model import attention_net as encode_net
 else:
     raise NotImplementedError("model type: {}".format(conf.model_type))
 
@@ -30,12 +32,12 @@ class Encoder:
 
 def create_embed_encoder(x_in, is_training, is_normal=True):
     if is_normal:
-        embedding, debug_info = encode_net(x_in, is_training)
+        embedding, debug_info = encode_net(x_in, is_training)               # 以序列为单位进行编码：[batch_size, seq_len]
     else:
         x_size = tf.shape(x_in)
         x_in_dim = x_in.get_shape().as_list()[2]
-        x_in_reshape = tf.reshape(x_in, [-1, x_in_dim])
-        x_embedding, debug_info = encode_net(x_in_reshape, is_training)
+        x_in_reshape = tf.reshape(x_in, [-1, x_in_dim])                         # x_in：[batch_size, (1 + num_neg), seq_len]
+        x_embedding, debug_info = encode_net(x_in_reshape, is_training)         # 以序列为单位进行编码：[batch_size * (1 + num_neg), seq_len]
         x_embedding_dim = x_embedding.get_shape().as_list()[1]
         embedding = tf.reshape(x_embedding, [-1, x_size[1], x_embedding_dim])
         '''
