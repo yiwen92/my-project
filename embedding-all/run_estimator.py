@@ -6,6 +6,9 @@ import model_utils
 
 # Define the model function (following TF Estimator Template)
 def model_fn(features, labels, mode, params):
+    bsz = tf.shape(features["entity_ids"])[0]
+    qlen = tf.shape(features["entity_ids"])[1]
+    features["entity_ids_list"] = tf.reshape(features["entity_ids_list"], [bsz, -1, qlen])
     # Build the neural network
     # Because Dropout have different behavior at training and prediction time, we
     # need to create 2 distinct computation graphs that still share the same weights.
@@ -20,7 +23,7 @@ def model_fn(features, labels, mode, params):
     if mode == tf.estimator.ModeKeys.TRAIN:
         # total_loss = tf_loss(sim_op, sim_emb)
         #total_loss = cross_entropy_loss(sim_op, features['label'])
-        total_loss = multi_loss(sim_op, sim_emb, features['label'])
+        total_loss = multi_loss(sim_op, sim_emb, features['labels'])
         #### Configuring the optimizer
         train_op, learning_rate, _ = model_utils.get_train_op(FLAGS, total_loss)
         # train_op = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate).minimize(total_loss, global_step=tf.train.get_global_step())
@@ -43,11 +46,11 @@ def run():
     # Build the Estimator
     model = tf.estimator.Estimator(model_fn, params={"seq_len": SEQ_LEN}, config=run_config)
     # Define the input function for training
-    input_fn = tf.estimator.inputs.numpy_input_fn(
-        x={'entity_ids': x_train, 'entity_ids_list': y_train, 'label': label_train},
-        batch_size=FLAGS.batch_size, num_epochs=None, shuffle=True)
+#    input_fn = tf.estimator.inputs.numpy_input_fn(
+#        x={'entity_ids': x_train, 'entity_ids_list': y_train, 'labels': label_train},
+#        batch_size=FLAGS.batch_size, num_epochs=None, shuffle=True)
     # Define the input function based on tf.record file
-    #input_fn = gen_train_input_fn(FLAGS.train_samples)
+    input_fn = gen_train_input_fn(FLAGS.train_samples)
     # Train the Model
     model.train(input_fn, steps=FLAGS.train_steps)
     # save model

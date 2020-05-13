@@ -192,15 +192,17 @@ class InputExample(object):
 
 class InputFeatures(object):
   """A single set of features of data."""
-  def __init__(self, entity_ids, pos_entity_id, neg_entity_list_ids):
+  def __init__(self, entity_ids, pos_entity_id, neg_entity_list_ids, labels):
     self.entity_ids = entity_ids
     self.pos_entity_id = pos_entity_id
     self.neg_entity_list_ids = neg_entity_list_ids
+    self.labels = labels
 
 def create_example(file_path):
     examples = []
     train_samples = json.load(open(file_path, encoding="utf8"))
-    for i, (ent, (pos, negs)) in enumerate(train_samples.items()):
+    for i, (ent, pos, negs) in train_samples.items():
+    #for i, (ent, (pos, negs)) in enumerate(train_samples.items()):
         examples.append(InputExample(i, ent, pos, negs))
     return examples
 
@@ -234,6 +236,18 @@ def file_based_convert_examples_to_features(examples, max_seq_length, tokenize_f
         f = tf.train.Feature(bytes_list=tf.train.BytesList(value=[values]))
         return f
 
+    def get_tfrecords_example(feature):
+        tfrecords_features = collections.OrderedDict()
+        tfrecords_features['entity_ids'] = tf.train.Feature(int64_list=tf.train.Int64List(value=list(feature.entity_ids)))
+        tfrecords_features['labels'] = tf.train.Feature(int64_list=tf.train.Int64List(value=list(feature.labels)))
+        entitys = copy.deepcopy(feature.pos_entity_id)
+        for e in feature.neg_entity_list_ids: entitys.extend(e)
+        feat_shape = [1 + len(feature.neg_entity_list_ids), len(feature.neg_entity_list_ids[0])]
+        assert feat_shape[0] * feat_shape[1] == len(entitys)
+        tfrecords_features['entity_ids_list'] = tf.train.Feature(int64_list=tf.train.Int64List(value=list(entitys)))
+        tfrecords_features['shape'] = tf.train.Feature(int64_list=tf.train.Int64List(value=list(feat_shape)))
+        return tf.train.Example(features=tf.train.Features(feature=tfrecords_features))
+    '''
     features = collections.OrderedDict()
     features["entity_ids"] = create_int_feature(feature.entity_ids)
     for i, e in enumerate([feature.pos_entity_id] + feature.neg_entity_list_ids):
@@ -243,6 +257,8 @@ def file_based_convert_examples_to_features(examples, max_seq_length, tokenize_f
     #features["entity_ids_list"] = create_int_feature_lists([feature.pos_entity_id] + feature.neg_entity_list_ids)
 
     tf_example = tf.train.Example(features=tf.train.Features(feature=features))
+    '''
+    tf_example = get_tfrecords_example(feature=feature)
     writer.write(tf_example.SerializeToString())
   writer.close()
 
@@ -251,6 +267,7 @@ def convert_single_example(ex_index, example, max_seq_length, tokenize_fn):
   ent_ids = tokenize_fn(example.entity)
   pos_ent_ids = tokenize_fn(example.pos_entity)
   neg_entity_list_ids = [tokenize_fn(e) for e in example.neg_entitys]
+  labels = [1] + [0] * len(neg_entity_list_ids)  # 1 + k 个标签，第一个为1，其它的为0
 
   if ex_index < 5:
     tf.logging.info("*** Example ***")
@@ -258,8 +275,9 @@ def convert_single_example(ex_index, example, max_seq_length, tokenize_fn):
     tf.logging.info("entity_ids: %s" % " ".join([str(x) for x in ent_ids]))
     tf.logging.info("positive_entity_ids: %s" % " ".join([str(x) for x in pos_ent_ids]))
     tf.logging.info("negative_entity_list_ids: %s" % "\t".join([",".join([str(x) for x in e]) for e in neg_entity_list_ids]))
+    tf.logging.info("labels: %s" % " ".join([str(x) for x in labels]))
 
-  feature = InputFeatures(entity_ids=ent_ids, pos_entity_id=pos_ent_ids, neg_entity_list_ids=neg_entity_list_ids)
+  feature = InputFeatures(entity_ids=ent_ids, pos_entity_id=pos_ent_ids, neg_entity_list_ids=neg_entity_list_ids, labels=labels)
   return feature
 
 def tokenize_fn(text):
@@ -267,9 +285,11 @@ def tokenize_fn(text):
 
 def file_based_input_fn_builder(input_file, entity_num, seq_length, is_training, drop_remainder):
   """Creates an `input_fn` closure to be passed to TPUEstimator."""
+  # 一个训练样本的配置
   name_to_features = {
       "entity_ids": tf.FixedLenFeature([seq_length], tf.int64),
-      "entity_ids_list": tf.FixedLenFeature([], tf.string),
+      "entity_ids_list": tf.FixedLenFeature([entity_num * seq_length], tf.int64),
+      "labels": tf.FixedLenFeature([entity_num], tf.int64),
   }
 
   tf.logging.info("Input tfrecord file {}".format(input_file))
@@ -277,14 +297,13 @@ def file_based_input_fn_builder(input_file, entity_num, seq_length, is_training,
   def _decode_record(record, name_to_features):
     """Decodes a record to a TensorFlow example."""
     example = tf.parse_single_example(record, name_to_features)
-
+    '''
     entity_ids_list = example.pop("entity_ids_list")
     entity_ids_list = tf.decode_raw(entity_ids_list, tf.int64)
     example['entity_ids_list'] = tf.reshape(entity_ids_list, [entity_num, seq_length])
-
+    '''
     #entity_ids_list = example['entity_ids_list']
-    #entity_ids_list = tf.decode_raw(entity_ids_list, tf.int64)
-    #example['entity_ids_list'] = tf.reshape(entity_ids_list, [entity_num, seq_length])
+    #example['entity_ids_list'] = tf.reshape(entity_ids_list, [example['shape'][0], example['shape'][1]])
 
     return example
 
@@ -334,12 +353,13 @@ def gen_train_input_fn(file_path):
     np.random.shuffle(train_examples)
     tf.logging.info("Num of train samples: {}".format(len(train_examples)))
     file_based_convert_examples_to_features(train_examples, FLAGS.max_seq_length, tokenize_fn, train_file)
-    train_input_fn = file_based_input_fn_builder(input_file=train_file, entity_num=1+MAX_NUM_NEG, seq_length=FLAGS.max_seq_length, is_training=True, drop_remainder=True)
+    neg_num = len(train_examples[0].neg_entitys)
+    train_input_fn = file_based_input_fn_builder(input_file=train_file, entity_num=1+neg_num, seq_length=FLAGS.max_seq_length, is_training=True, drop_remainder=True)
     return train_input_fn
 
 if __name__ == "__main__":
-    #gen_train_input_fn(conf.train_samples)
+    gen_train_input_fn(FLAGS.train_samples); exit()
     td = TrainData()
     #td.gen_train_samples()
     #td.gen_train_sample_based_title_desc()
-    gen_train_samples(FLAGS.valid_samples)
+    #gen_train_samples(FLAGS.valid_samples)

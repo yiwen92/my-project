@@ -39,6 +39,7 @@ class Config:
 conf = Config()
 
 flags.DEFINE_integer("batch_size", default=512, help="batch size of every train step")
+flags.DEFINE_integer("train_batch_size", default=512, help="batch size of every train step")
 flags.DEFINE_float("learning_rate", default=1e-4, help="Maximum learning rate.")
 flags.DEFINE_integer("train_steps", default=100, help="Total number of training steps.")
 flags.DEFINE_integer("save_steps", default=100, help="Save the model for every save_steps. If None, not to save any model.")
