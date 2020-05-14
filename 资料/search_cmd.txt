@@ -1,0 +1,65 @@
+SearchHandleImpl.java
+	{
+		assign(){	// 搜索入口
+			getSearchQuery();	//拼搜索的query
+			searcher.Search();	-->	ESSearcherImpl.java		//开始请求ES
+		}
+	}
+	
+curl "192.168.8.52:6690/?handle=search&m=jd&facet=0&nocache=1&count=10&keyword=java"
+curl "192.168.7.218:6690/?handle=search&m=jd&facet=0&nocache=1&count=10&keyword=java"
+[kdd_zouning@kdd52 batch]$ scp -r devread@192.168.8.196:/opt/userhome/icsearch/service/edps_v3/batch .		(123456)
+
+update:
+rm -rf build.gradle doc gradle gradlew gradlew.bat lombok.config README.md resource script settings.gradle src .git .gitignore target pom.xml
+git init
+git config user.name ning.zou
+git config user.email ning.zou@ifchange.com
+git remote add origin https://gitlab.ifchange.com/algo/ifchange_search.git
+git fetch origin
+git checkout -b feature_zouning origin/dev
+cp ~/attribute/resource/constant.properties resource/constant.properties
+cp ~/attribute/resource/gm.conf resource/gm.conf
+cp ~/attribute/script/start_search.sh script/start_search.sh
+cp ~/environment .
+cp ~/auto .
+cp ~/stop_search.sh .
+
+auto:
+sh stop_search.sh
+./gradlew clean fatJar
+sh script/start_search.sh
+tail -f log/search.log  log/search0.log
+
+
+http://127.0.0.1:15000/_plugin/head/	http://127.0.0.1:15000/edps_dcjd/jd/	{"query": {"match_all": {}}}
+
+Java Extension Pack, 
+
+./gradlew build
+RUN Launch Search
+
+
+D:\edps\src\main\java\com\echeng\dps\search\model\unit\ESJDUnit.java setTitle_feature()
+/opt/userhome/kdd_zouning/searchdev/src/main/java/com/echeng/dps/util/ESMethodCache.java line34
+
+/opt/app/mysql/bin/mysql -h192.168.7.82 -ukdd -pkd12934d -P3307
+use toh_intervention_admin;
+set names utf8;
+
+
+yeahmobi
+
+
+src/main/java/com/echeng/dps/search/common/IndustryCalculator.java -> src/main/java/com/echeng/dps/dict
+src/main/java/com/echeng/dps/search/common/CorpCalculator.java -> src/main/java/com/echeng/dps/dict
+
+http://test-tag.ifchange.com/?c=publisher_publish
+
+
+{
+  "query": {
+    "match_all": {}
+  },
+  "fields": "*"
+}

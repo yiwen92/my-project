@@ -56,6 +56,8 @@ git add src/main/java/com/echeng/dps/tools/gmclient/HelloWorld.java
 git commit -m "更新文件"
 git push origin feature_zouning
 
+git push origin --delete feature_zouning	# 删除远程分支
+
 git remote -v		# 查看远程仓库
 git fetch origin master:temp		# 从远程的origin仓库的master分支下载到本地master并新建一个temp分支
 
@@ -88,3 +90,35 @@ resource/constant.properties	resource/gm.conf	script/start_search.sh	environment
 git log		（获取要恢复的版本号）	（使用 "git reset HEAD <文件>..." 以取消暂存）
 git reset –-soft <版本号>		（–-soft只是改变了HEAD的指向，本地代码不会变化。–-hard直接回改变本地源码，不仅仅指向变化了，代码也回到了那个版本时的代码）
 git push origin 分支名 –-force		（强制提交当前版本号）
+
+
+
+
+Command line instructions
+
+Git global setup：
+git config --global user.name "zouning1"
+git config --global user.email "ning.zou@ifchange.com"
+
+Create a new repository：
+git clone git@gitlab.ifchange.com:zouning1/queryweight.git
+cd queryweight
+touch README.md
+git add README.md
+git commit -m "add README"
+git push -u origin master
+
+Existing folder：
+cd existing_folder
+git init
+git remote add origin git@gitlab.ifchange.com:zouning1/queryweight.git
+git add .
+git commit -m "Initial commit"
+git push -u origin master
+
+Existing Git repository：
+cd existing_repo
+git remote rename origin old-origin
+git remote add origin git@gitlab.ifchange.com:zouning1/queryweight.git
+git push -u origin --all
+git push -u origin --tags

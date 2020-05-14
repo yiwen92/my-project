@@ -1,0 +1,13 @@
+rm -rf build.gradle doc gradle gradlew gradlew.bat lombok.config README.md resource script settings.gradle src .git .gitignore
+git init
+git config user.name ning.zou
+git config user.email ning.zou@ifchange.com
+git remote add origin https://gitlab.ifchange.com/algo/edps.git
+git fetch origin
+git checkout -b feature_zouning origin/dev
+cp ~/attribute/resource/constant.properties resource/constant.properties
+cp ~/attribute/resource/gm.conf resource/gm.conf
+cp ~/attribute/script/start_search.sh script/start_search.sh
+cp ~/environment .
+cp ~/auto .
+cp ~/stop_search.sh .
