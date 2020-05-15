@@ -23,6 +23,8 @@ def attention_net(input_x, is_training=True, scope='AttenNet', config=AttentionC
         Out = tf.TensorArray(size=0, dtype=tf.float32, dynamic_size=True, clear_after_read=False)
         res = tf.while_loop(cond, body, [0, lengths, Out])
         input_mask = tf.convert_to_tensor(res[-1].stack())
+        _input_mask_ = tf.equal(0, input_x)
+        input_mask_ = tf.cast(_input_mask_, tf.float32)
         inp = tf.transpose(input_x, [1, 0])
         seg_id = tf.transpose(segment_ids, [1, 0])
         inp_mask = tf.transpose(input_mask, [1, 0])
@@ -42,7 +44,7 @@ def attention_net(input_x, is_training=True, scope='AttenNet', config=AttentionC
         # Get a sequence output
         seq_out = xlnet_model.get_sequence_output()
         debug_info['input_x']=input_x;debug_info['segment_ids']=segment_ids;debug_info['input_mask']=input_mask
-        debug_info['summary']=summary
+        debug_info['summary']=summary; debug_info['input_mask_']=input_mask_
     return summary, debug_info
 
 if __name__ == "__main__":
