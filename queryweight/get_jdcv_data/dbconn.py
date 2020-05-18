@@ -52,8 +52,8 @@ def get_jdcv_ids():
             ftd.write(''.join(res[1:]))
     ftd.close()
 
-def get_search_label_data():
-    results = []
+def get_search_label_data(task_id):
+    results = []; out_file = "feedback."+ "_".join(task_id.split())
     db_params = {
         "host": "192.168.8.218",
         "user": "kdd",
@@ -62,7 +62,13 @@ def get_search_label_data():
         "db": "feedback",
         "charset": "utf8"
     }
-    sql = "select * from cv_score_keyword_detail where task_id=2979 and is_correct > '-1'"
+
+    ids = "(" + ",".join(task_id.split()) + ")"
+    sql = "select * from cv_score_keyword_detail where task_id in " + ids
+    #sql = "select * from cv_score_keyword_detail where task_id=2979 and is_correct > '-1'"
+    #sql = "select * from cv_score_keyword_detail where task_id=2982 and keyword not like '%andriod%' and is_correct > '-1' and rank <= 15"
+    #sql = "select * from cv_score_keyword_detail where task_id in (3025,3026)"
+    #sql = "select * from cv_score_keyword_detail where task_id=" + str(task_id) + " and is_correct > '-1'"
     connect = pymysql.connect(**db_params)
     cursor = connect.cursor()
     cursor.execute(sql)
@@ -71,11 +77,26 @@ def get_search_label_data():
     results.append('\t'.join([str(e[0]) for e in fields]) + '\n')    # 记录字段的类型
     for data in datas:  # 记录数据
         results.append('\t'.join([str(e) for e in data]) + '\n')
-    with open("feedback.res", "w", encoding="utf8") as fin:
+    with open(out_file, "w", encoding="utf8") as fin:
         fin.write("".join(results))
     cursor.close()
     connect.close
+    #   综合数据结果
+    text = [e.strip().split("\t") for e in open(out_file, encoding="utf8").readlines()]
+    ftd = {e: open("label." + e, "w", encoding="utf8") for e in task_id.split()}
+    taskid_keyword_label = {e: {} for e in task_id.split()}
+    for i, line in enumerate(text):
+        if i == 0: field2id = {e: i for i, e in enumerate(line)}; continue
+        taskid, keyword, is_correct = line[field2id['task_id']], line[field2id['keyword']], line[field2id['is_correct']]
+        if keyword not in taskid_keyword_label[taskid]: taskid_keyword_label[taskid][keyword] = []
+        taskid_keyword_label[taskid][keyword].append(is_correct)
+    keys = list(taskid_keyword_label[task_id.split()[0]].keys())
+    for taskid, keywordlabel in taskid_keyword_label.items():
+        for k in keys:
+            labels = keywordlabel[k]
+            ftd[taskid].write(k + "\t" + " ".join(labels) + "\n")
+    for e, fout in ftd.items(): fout.close()
 
 if __name__ == '__main__':
     #get_jdcv_ids()
-    get_search_label_data()
+    get_search_label_data("3025 3026")
